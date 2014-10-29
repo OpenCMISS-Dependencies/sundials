@@ -32,7 +32,7 @@ SET(sundials_HEADERS
   )
 
 # Add prefix with complete path to the SUNDIALS header files
-ADD_PREFIX(${sundials_SOURCE_DIR}/include/sundials/ sundials_HEADERS)
+ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/sundials/ sundials_HEADERS)
 
 # Install the SUNDIALS header files
 INSTALL(FILES ${sundials_HEADERS} DESTINATION include/sundials)
@@ -40,6 +40,6 @@ INSTALL(FILES ${sundials_HEADERS} DESTINATION include/sundials)
 # If Blas/Lapack support was enabled, install the Lapack interface headers
 IF(LAPACK_FOUND)
   SET(sundials_BL_HEADERS sundials_lapack.h)
-  ADD_PREFIX(${sundials_SOURCE_DIR}/include/sundials/ sundials_BL_HEADERS)
+  ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/sundials/ sundials_BL_HEADERS)
   INSTALL(FILES ${sundials_BL_HEADERS} DESTINATION include/sundials)
 ENDIF(LAPACK_FOUND)

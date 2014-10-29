@@ -32,9 +32,9 @@ SET(FCVODE_examples_BL
 # generate them) based on the value of the variable LINK_LIBRARY_TYPE
 
 IF(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(CVODE_LIB sundials_cvode_static)
-  SET(NVECS_LIB sundials_nvecserial_static)
-  SET(FNVECS_LIB sundials_fnvecserial_static)
+  SET(CVODE_LIB sundials_cvode)
+  SET(NVECS_LIB sundials_nvecserial)
+  SET(FNVECS_LIB sundials_fnvecserial)
 ELSE(LINK_LIBRARY_TYPE MATCHES "static")
   SET(CVODE_LIB sundials_cvode_shared)
   SET(NVECS_LIB sundials_nvecserial_shared)
@@ -43,7 +43,7 @@ ENDIF(LINK_LIBRARY_TYPE MATCHES "static")
 
 # Only static FCMIX libraries are available
 
-SET(FCVODE_LIB sundials_fcvode_static)
+SET(FCVODE_LIB sundials_fcvode)
 
 # Set-up linker flags and link libraries
 

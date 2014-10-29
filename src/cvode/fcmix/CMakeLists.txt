@@ -19,27 +19,20 @@ ELSE(LAPACK_FOUND)
   SET(fcvode_BL_SOURCES "")
 ENDIF(LAPACK_FOUND)
 
-# Add source directories to include directories for access to
-# implementation only header files (both for fcvode and cvode)
-INCLUDE_DIRECTORIES(.)
-INCLUDE_DIRECTORIES(..)
-
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
-# Only build STATIC libraries (we cannot build shared libraries 
-# for the FCMIX interfaces due to unresolved symbol errors 
-# coming from inexistent user-provided functions)
-
 # Add the build target for the FCVODE library
-ADD_LIBRARY(sundials_fcvode_static STATIC ${fcvode_SOURCES} ${fcvode_BL_SOURCES})
-
-# Set the library name and make sure it is not deleted
-SET_TARGET_PROPERTIES(sundials_fcvode_static
+ADD_LIBRARY(sundials_fcvode STATIC ${fcvode_SOURCES} ${fcvode_BL_SOURCES})
+target_include_directories(sundials_fcvode PUBLIC . ..)
+SET_TARGET_PROPERTIES(sundials_fcvode
   PROPERTIES OUTPUT_NAME sundials_fcvode CLEAN_DIRECT_OUTPUT 1)
+IF(LAPACK_FOUND)
+    target_link_libraries(sundials_fcvode PUBLIC lapack)
+endif()
 
 # Install the FCVODE library
-INSTALL(TARGETS sundials_fcvode_static DESTINATION lib)
+#INSTALL(TARGETS sundials_fcvode DESTINATION lib)
 
 #
 MESSAGE(STATUS "Added CVODE FCMIX module")

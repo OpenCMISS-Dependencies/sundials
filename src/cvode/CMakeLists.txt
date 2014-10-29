@@ -44,7 +44,7 @@ SET(shared_SOURCES
   )
 
 # Add prefix with complete path to the common SUNDIALS sources
-ADD_PREFIX(${sundials_SOURCE_DIR}/src/sundials/ shared_SOURCES)
+ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/src/sundials/ shared_SOURCES)
 
 # Add variable cvode_HEADERS with the exported CVODE header files
 SET(cvode_HEADERS
@@ -62,67 +62,36 @@ SET(cvode_HEADERS
   )
 
 # Add prefix with complete path to the CVODE header files
-ADD_PREFIX(${sundials_SOURCE_DIR}/include/cvode/ cvode_HEADERS)
+ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/cvode/ cvode_HEADERS)
 
 # If Blas/Lapack support was enabled, set-up additional file lists
 IF(LAPACK_FOUND)
   SET(cvode_BL_SOURCES cvode_lapack.c)
   SET(cvode_BL_HEADERS cvode_lapack.h)
-  ADD_PREFIX(${sundials_SOURCE_DIR}/include/cvode/ cvode_BL_HEADERS)
+  ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/cvode/ cvode_BL_HEADERS)
 ELSE(LAPACK_FOUND)
   SET(cvode_BL_SOURCES "")
   SET(cvode_BL_HEADERS "")
 ENDIF(LAPACK_FOUND)
 
-# Add source directories to include directories for access to
-# implementation only header files.
-INCLUDE_DIRECTORIES(.)
-INCLUDE_DIRECTORIES(../sundials)
-
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
-# Build the static library
-IF(BUILD_STATIC_LIBS)
-
-  # Add the build target for the static CVODE library
-  ADD_LIBRARY(sundials_cvode_static STATIC 
-    ${cvode_SOURCES}  ${cvode_BL_SOURCES} ${shared_SOURCES})
-
-  # Set the library name and make sure it is not deleted
-  SET_TARGET_PROPERTIES(sundials_cvode_static
-    PROPERTIES OUTPUT_NAME sundials_cvode CLEAN_DIRECT_OUTPUT 1)
-
-  # Install the CVODE library
-  INSTALL(TARGETS sundials_cvode_static DESTINATION lib)
-
-ENDIF(BUILD_STATIC_LIBS)
-
-# Build the shared library
-IF(BUILD_SHARED_LIBS)
-
-  # Add the build target for the CVODE library
-  ADD_LIBRARY(sundials_cvode_shared SHARED 
-    ${cvode_SOURCES}  ${cvode_BL_SOURCES}  ${shared_SOURCES})
-
-  # Set the library name and make sure it is not deleted
-  SET_TARGET_PROPERTIES(sundials_cvode_shared
-    PROPERTIES OUTPUT_NAME sundials_cvode CLEAN_DIRECT_OUTPUT 1)
-
-  # Set VERSION and SOVERSION for shared libraries
-  SET_TARGET_PROPERTIES(sundials_cvode_shared
-    PROPERTIES VERSION ${cvodelib_VERSION} SOVERSION ${cvodelib_SOVERSION})
-
-  # Install the CVODE library
-  INSTALL(TARGETS sundials_cvode_shared DESTINATION lib)
-
-ENDIF(BUILD_SHARED_LIBS)
+# Add the build target for the static CVODE library
+ADD_LIBRARY(sundials_cvode STATIC 
+  ${cvode_SOURCES}  ${cvode_BL_SOURCES} ${shared_SOURCES})
+target_include_directories(sundials_cvode PUBLIC . ../sundials)
+SET_TARGET_PROPERTIES(sundials_cvode
+  PROPERTIES OUTPUT_NAME sundials_cvode CLEAN_DIRECT_OUTPUT 1)
+IF(LAPACK_FOUND)
+    target_link_libraries(sundials_cvode PUBLIC lapack)
+endif()
 
 # Install the CVODE header files
-INSTALL(FILES ${cvode_HEADERS} ${cvode_BL_HEADERS} DESTINATION include/cvode)
+#INSTALL(FILES ${cvode_HEADERS} ${cvode_BL_HEADERS} DESTINATION include/cvode)
 
 # Install the CVODE implementation header file
-INSTALL(FILES cvode_impl.h DESTINATION include/cvode)
+#INSTALL(FILES cvode_impl.h DESTINATION include/cvode)
 
 #
 MESSAGE(STATUS "Added CVODE module")

@@ -34,9 +34,9 @@ ENDIF(MPI_MPIF77)
 # generate them) based on the value of the variable LINK_LIBRARY_TYPE
 
 IF(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(KINSOL_LIB sundials_kinsol_static)
-  SET(NVECP_LIB sundials_nvecparallel_static)
-  SET(FNVECP_LIB sundials_fnvecparallel_static)
+  SET(KINSOL_LIB sundials_kinsol)
+  SET(NVECP_LIB sundials_nvecparallel)
+  SET(FNVECP_LIB sundials_fnvecparallel)
 ELSE(LINK_LIBRARY_TYPE MATCHES "static")
   SET(KINSOL_LIB sundials_kinsol_shared)
   SET(NVECP_LIB sundials_nvecparallel_shared)
@@ -45,7 +45,7 @@ ENDIF(LINK_LIBRARY_TYPE MATCHES "static")
 
 # Only static FCMIX libraries are available
 
-SET(FKINSOL_LIB sundials_fkinsol_static)
+SET(FKINSOL_LIB sundials_fkinsol)
 
 # Set-up linker flags and link libraries
 

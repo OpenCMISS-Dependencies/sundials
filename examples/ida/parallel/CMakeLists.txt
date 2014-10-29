@@ -37,8 +37,8 @@ ENDIF(MPI_MPICC)
 # generate them) based on the value of the variable LINK_LIBRARY_TYPE
 
 IF(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(IDA_LIB sundials_ida_static)
-  SET(NVECP_LIB sundials_nvecparallel_static)
+  SET(IDA_LIB sundials_ida)
+  SET(NVECP_LIB sundials_nvecparallel)
 ELSE(LINK_LIBRARY_TYPE MATCHES "static")
   SET(IDA_LIB sundials_ida_shared)
   SET(NVECP_LIB sundials_nvecparallel_shared)

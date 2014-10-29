@@ -43,7 +43,7 @@ SET(shared_SOURCES
   )
 
 # Add prefix with complete path to the common SUNDIALS sources
-ADD_PREFIX(${sundials_SOURCE_DIR}/src/sundials/ shared_SOURCES)
+ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/src/sundials/ shared_SOURCES)
 
 # Add variable ida_HEADERS with the exported IDA header files
 SET(ida_HEADERS
@@ -59,67 +59,40 @@ SET(ida_HEADERS
   )
 
 # Add prefix with complete path to the IDA header files
-ADD_PREFIX(${sundials_SOURCE_DIR}/include/ida/ ida_HEADERS)
+ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/ida/ ida_HEADERS)
 
 # If Blas/Lapack support was enabled, set-up additional file lists
 IF(LAPACK_FOUND)
   SET(ida_BL_SOURCES ida_lapack.c)
   SET(ida_BL_HEADERS ida_lapack.h)
-  ADD_PREFIX(${sundials_SOURCE_DIR}/include/ida/ ida_BL_HEADERS)
+  ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/ida/ ida_BL_HEADERS)
 ELSE(LAPACK_FOUND)
   SET(ida_BL_SOURCES "")
   SET(ida_BL_HEADERS "")
 ENDIF(LAPACK_FOUND)
 
-# Add source directories to include directories for access to
-# implementation only header files.
-INCLUDE_DIRECTORIES(.)
-INCLUDE_DIRECTORIES(../sundials)
-
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
-# Build the static library
-IF(BUILD_STATIC_LIBS)
+# Add the build target for the static IDA library
+ADD_LIBRARY(sundials_ida STATIC 
+  ${ida_SOURCES}  ${ida_BL_SOURCES}  ${shared_SOURCES})
 
-  # Add the build target for the static IDA library
-  ADD_LIBRARY(sundials_ida_static STATIC 
-    ${ida_SOURCES}  ${ida_BL_SOURCES}  ${shared_SOURCES})
+target_include_directories(sundials_ida PUBLIC . ../sundials)
+SET_TARGET_PROPERTIES(sundials_ida
+  PROPERTIES OUTPUT_NAME sundials_ida CLEAN_DIRECT_OUTPUT 1)
+IF(LAPACK_FOUND)
+    target_link_libraries(sundials_ida PUBLIC lapack)
+endif()
 
-  # Set the library name and make sure it is not deleted
-  SET_TARGET_PROPERTIES(sundials_ida_static
-    PROPERTIES OUTPUT_NAME sundials_ida CLEAN_DIRECT_OUTPUT 1)
-
-  # Install the IDA library
-  INSTALL(TARGETS sundials_ida_static DESTINATION lib)
-
-ENDIF(BUILD_STATIC_LIBS)
-
-# Build the shared library
-IF(BUILD_SHARED_LIBS)
-
-  # Add the build target for the IDA library
-  ADD_LIBRARY(sundials_ida_shared SHARED
-    ${ida_SOURCES}  ${ida_BL_SOURCES} ${shared_SOURCES})
-
-  # Set the library name and make sure it is not deleted
-  SET_TARGET_PROPERTIES(sundials_ida_shared
-    PROPERTIES OUTPUT_NAME sundials_ida CLEAN_DIRECT_OUTPUT 1)
-
-  # Set VERSION and SOVERSION for shared libraries
-  SET_TARGET_PROPERTIES(sundials_ida_shared
-    PROPERTIES VERSION ${idalib_VERSION} SOVERSION ${idalib_SOVERSION})
-
-  # Install the IDA library
-  INSTALL(TARGETS sundials_ida_shared DESTINATION lib)
-
-ENDIF(BUILD_SHARED_LIBS)
+# Install the IDA library
+#INSTALL(TARGETS sundials_ida DESTINATION lib)
 
 # Install the IDA header files
-INSTALL(FILES ${ida_HEADERS} ${ida_BL_HEADERS} DESTINATION include/ida)
+#INSTALL(FILES ${ida_HEADERS} ${ida_BL_HEADERS} DESTINATION include/ida)
 
 # Install the IDA implementation header file
-INSTALL(FILES ida_impl.h DESTINATION include/ida)
+#INSTALL(FILES ida_impl.h DESTINATION include/ida)
 
 #
 MESSAGE(STATUS "Added IDA module")

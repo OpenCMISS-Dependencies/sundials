@@ -13,7 +13,7 @@
 # Top level CMakeLists.txt for SUNDIALS (for cmake build system)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(sundials VERSION 2.5 LANGUAGES C)
+PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C)
 
 if (OPENCMISS_DEPENDENCIES_LIBRARIES)
     SET(CMAKE_PREFIX_PATH ${OPENCMISS_DEPENDENCIES_CONFIGS_DIR} ${CMAKE_PREFIX_PATH})
@@ -22,11 +22,15 @@ else()
     SET(CMAKE_PREFIX_PATH ../cmake/release ../cmake/debug ${CMAKE_PREFIX_PATH})
     SET(OPENCMISS_DEPENDENCIES_CONFIGS_DIR ${CMAKE_CURRENT_BINARY_DIR})
     SET(BUILD_TESTING ON)
+    SET(USE_LAPACK ON)
 endif()
 
-FIND_PACKAGE(BLAS CONFIG REQUIRED)
-FIND_PACKAGE(LAPACK CONFIG REQUIRED)
+IF (USE_LAPACK)
+    FIND_PACKAGE(BLAS CONFIG REQUIRED)
+    FIND_PACKAGE(LAPACK CONFIG REQUIRED)
+endif()
 FIND_PACKAGE(MPI REQUIRED)
+include(CMakePackageConfigHelpers)
 
 MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH LIBRARY_OUTPUT_PATH)
 MARK_AS_ADVANCED(CLEAR
@@ -37,28 +41,14 @@ MARK_AS_ADVANCED(CLEAR
   CMAKE_C_FLAGS_RELEASE
   CMAKE_C_FLAGS_RELWITHDEB)
 
-# Specify the VERSION and SOVERSION for shared libraries
-
+# Specify the VERSION for libraries
 SET(cvodelib_VERSION "1.0.0")
-SET(cvodelib_SOVERSION "1")
-
 SET(cvodeslib_VERSION "2.0.0")
-SET(cvodeslib_SOVERSION "2")
-
 SET(idalib_VERSION "2.0.0")
-SET(idalib_SOVERSION "2")
-
 SET(idaslib_VERSION "0.0.0")
-SET(idaslib_SOVERSION "0")
-
 SET(kinsollib_VERSION "1.0.0")
-SET(kinsollib_SOVERSION "1")
-
 SET(cpodeslib_VERSION "0.0.0")
-SET(cpodeslib_SOVERSION "0")
-
 SET(nveclib_VERSION "0.0.2")
-SET(nveclib_SOVERSION "0")
 
 # Specify the location of additional CMAKE modules
 
@@ -351,49 +341,66 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/include)
 # -------------------------------------------------------------
 
 # Shared components
-
-ADD_SUBDIRECTORY(src/sundials)
+# This only contains information for shared headers, which are included in the
+# interface include directories for each subcomponent
+#ADD_SUBDIRECTORY(src/sundials)
 ADD_SUBDIRECTORY(src/nvec_ser)
+SET(exports sundials_nvecserial)
+if (FCMIX_ENABLE AND F77_FOUND)
+    LIST(APPEND exports sundials_fnvecserial)
+endif()
 IF(MPIC_FOUND)
   ADD_SUBDIRECTORY(src/nvec_par)
+  LIST(APPEND exports sundials_nvecparallel)
+  if (FCMIX_ENABLE AND F77_FOUND)
+    LIST(APPEND exports sundials_fnvecparallel)
+endif()
 ENDIF(MPIC_FOUND)
 
 # CVODE library
 
 IF(BUILD_CVODE)	
   ADD_SUBDIRECTORY(src/cvode)
+  LIST(APPEND exports sundials_cvode)
   IF(FCMIX_ENABLE AND F77_FOUND)
     ADD_SUBDIRECTORY(src/cvode/fcmix)
-  ENDIF(FCMIX_ENABLE AND F77_FOUND)
-ENDIF(BUILD_CVODE)
+    LIST(APPEND exports sundials_fcvode)
+  ENDIF()
+ENDIF()
 
 # CVODES library
 
 IF(BUILD_CVODES)	
   ADD_SUBDIRECTORY(src/cvodes)
-ENDIF(BUILD_CVODES)
+  LIST(APPEND exports sundials_cvodes)
+ENDIF()
 
 # IDA library
 
 IF(BUILD_IDA)	
   ADD_SUBDIRECTORY(src/ida)
+  LIST(APPEND exports sundials_ida)
   IF(FCMIX_ENABLE AND F77_FOUND)
     ADD_SUBDIRECTORY(src/ida/fcmix)
-  ENDIF(FCMIX_ENABLE AND F77_FOUND)
-ENDIF(BUILD_IDA)
+    LIST(APPEND exports sundials_fida)
+  ENDIF()
+ENDIF()
 
 # IDAS library
 
 IF(BUILD_IDAS)	
   ADD_SUBDIRECTORY(src/idas)
+  LIST(APPEND exports sundials_idas)
 ENDIF(BUILD_IDAS)
 
 # KINSOL library
 
 IF(BUILD_KINSOL)	
   ADD_SUBDIRECTORY(src/kinsol)
+  LIST(APPEND exports sundials_kinsol)
   IF(FCMIX_ENABLE AND F77_FOUND)
     ADD_SUBDIRECTORY(src/kinsol/fcmix)
+    LIST(APPEND exports sundials_fkinsol)
   ENDIF(FCMIX_ENABLE AND F77_FOUND)
 ENDIF(BUILD_KINSOL)
 
@@ -402,6 +409,11 @@ ENDIF(BUILD_KINSOL)
 IF(BUILD_CPODES)	
   ADD_SUBDIRECTORY(src/cpodes)
 ENDIF(BUILD_CPODES)
+
+# Build tree export
+export(TARGETS ${exports} FILE ${OPENCMISS_DEPENDENCIES_CONFIGS_DIR}/sundials-${SUNDIALS_VERSION}/sundials-config.cmake)
+WRITE_BASIC_PACKAGE_VERSION_FILE(${OPENCMISS_DEPENDENCIES_CONFIGS_DIR}/sundials-${SUNDIALS_VERSION}/sundials-config-version.cmake
+   VERSION ${SUNDIALS_VERSION} COMPATIBILITY AnyNewerVersion)
 
 # -------------------------------------------------------------
 # Include the subdirectories corresponding to various examples

@@ -28,9 +28,9 @@ SET(FKINSOL_examples_BL
 # generate them) based on the value of the variable LINK_LIBRARY_TYPE
 
 IF(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(KINSOL_LIB sundials_kinsol_static)
-  SET(NVECS_LIB sundials_nvecserial_static)
-  SET(FNVECS_LIB sundials_fnvecserial_static)
+  SET(KINSOL_LIB sundials_kinsol)
+  SET(NVECS_LIB sundials_nvecserial)
+  SET(FNVECS_LIB sundials_fnvecserial)
 ELSE(LINK_LIBRARY_TYPE MATCHES "static")
   SET(KINSOL_LIB sundials_kinsol_shared)
   SET(NVECS_LIB sundials_nvecserial_shared)
@@ -39,7 +39,7 @@ ENDIF(LINK_LIBRARY_TYPE MATCHES "static")
 
 # Only static FCMIX libraries are available
 
-SET(FKINSOL_LIB sundials_fkinsol_static)
+SET(FKINSOL_LIB sundials_fkinsol)
 
 # Set-up linker flags and link libraries
 

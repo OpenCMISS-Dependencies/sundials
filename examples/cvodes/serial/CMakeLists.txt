@@ -45,8 +45,8 @@ SET(CVODES_examples_BL
 # generate them) based on the value of the variable LINK_LIBRARY_TYPE
 
 IF(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(CVODES_LIB sundials_cvodes_static)
-  SET(NVECS_LIB sundials_nvecserial_static)
+  SET(CVODES_LIB sundials_cvodes)
+  SET(NVECS_LIB sundials_nvecserial)
 ELSE(LINK_LIBRARY_TYPE MATCHES "static")
   SET(CVODES_LIB sundials_cvodes_shared)
   SET(NVECS_LIB sundials_nvecserial_shared)

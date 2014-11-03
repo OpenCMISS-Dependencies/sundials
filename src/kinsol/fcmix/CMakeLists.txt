@@ -26,7 +26,9 @@ ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 # Add the build target for the FKINSOL library
 ADD_LIBRARY(sundials_fkinsol STATIC ${fkinsol_SOURCES} ${fkinsol_BL_SOURCES})
 
-target_include_directories(sundials_fkinsol PUBLIC . ..)
+target_include_directories(sundials_fkinsol PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 SET_TARGET_PROPERTIES(sundials_fkinsol
   PROPERTIES OUTPUT_NAME sundials_fkinsol CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
@@ -34,7 +36,8 @@ IF(LAPACK_FOUND)
 endif()  
 
 # Install the FKINSOL library
-#INSTALL(TARGETS sundials_fkinsol DESTINATION lib)
+INSTALL(TARGETS sundials_fkinsol EXPORT sundials-config
+    DESTINATION lib)
 
 #
 MESSAGE(STATUS "Added KINSOL FCMIX module")

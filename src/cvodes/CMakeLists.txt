@@ -82,7 +82,9 @@ ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 # Add the build target for the static CVODES library
 ADD_LIBRARY(sundials_cvodes STATIC 
   ${cvodes_SOURCES}  ${cvodes_BL_SOURCES}  ${shared_SOURCES})
-target_include_directories(sundials_cvodes PUBLIC . ../sundials)
+target_include_directories(sundials_cvodes PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../sundials>)
 SET_TARGET_PROPERTIES(sundials_cvodes
   PROPERTIES OUTPUT_NAME sundials_cvodes CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
@@ -90,13 +92,15 @@ IF(LAPACK_FOUND)
 endif()  
 
 # Install the CVODES library
-#INSTALL(TARGETS sundials_cvodes DESTINATION lib)
+INSTALL(TARGETS sundials_cvodes EXPORT sundials-config
+    DESTINATION lib
+    INCLUDES DESTINATION include/cvodes)
 
 # Install the CVODES header files
-#INSTALL(FILES ${cvodes_HEADERS}  ${cvodes_BL_HEADERS} DESTINATION include/cvodes)
+INSTALL(FILES ${cvodes_HEADERS}  ${cvodes_BL_HEADERS} DESTINATION include/cvodes)
 
 # Install the CVODES implementation header file
-#INSTALL(FILES cvodes_impl.h DESTINATION include/cvodes)
+INSTALL(FILES cvodes_impl.h DESTINATION include/cvodes)
 
 #
 MESSAGE(STATUS "Added CVODES module")

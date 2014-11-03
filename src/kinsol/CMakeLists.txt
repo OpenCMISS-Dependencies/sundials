@@ -77,7 +77,9 @@ ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 ADD_LIBRARY(sundials_kinsol STATIC
   ${kinsol_SOURCES} ${kinsol_BL_SOURCES} ${shared_SOURCES})
 
-target_include_directories(sundials_kinsol PUBLIC . ../sundials)
+target_include_directories(sundials_kinsol PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../sundials>)
 SET_TARGET_PROPERTIES(sundials_kinsol
   PROPERTIES OUTPUT_NAME sundials_kinsol CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
@@ -85,13 +87,15 @@ IF(LAPACK_FOUND)
 endif()
 
 # Install the KINSOL library
-#INSTALL(TARGETS sundials_kinsol DESTINATION lib)
+INSTALL(TARGETS sundials_kinsol EXPORT sundials-config
+    DESTINATION lib
+    INCLUDES DESTINATION include/kinsol)
 
 # Install the KINSOL header files
-#INSTALL(FILES ${kinsol_HEADERS} ${kinsol_BL_HEADERS} DESTINATION include/kinsol)
+INSTALL(FILES ${kinsol_HEADERS} ${kinsol_BL_HEADERS} DESTINATION include/kinsol)
 
 # Install the KINSOL implementation header file
-#INSTALL(FILES kinsol_impl.h DESTINATION include/kinsol)
+INSTALL(FILES kinsol_impl.h DESTINATION include/kinsol)
 
 #
 MESSAGE(STATUS "Added KINSOL module")

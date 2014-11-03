@@ -79,7 +79,9 @@ ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 # Add the build target for the static IDAS library
 ADD_LIBRARY(sundials_idas STATIC 
   ${idas_SOURCES} ${idas_BL_SOURCES}  ${shared_SOURCES})
-target_include_directories(sundials_idas PUBLIC . ../sundials)
+target_include_directories(sundials_idas PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../sundials>)
 SET_TARGET_PROPERTIES(sundials_idas
   PROPERTIES OUTPUT_NAME sundials_idas CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
@@ -87,13 +89,15 @@ IF(LAPACK_FOUND)
 endif()
 
 # Install the IDA library
-#INSTALL(TARGETS sundials_idas DESTINATION lib)
+INSTALL(TARGETS sundials_idas EXPORT sundials-config
+    DESTINATION lib
+    INCLUDES DESTINATION include/idas)
 
 # Install the IDAS header files
-#INSTALL(FILES ${idas_HEADERS} ${idas_BL_HEADERS} DESTINATION include/idas)
+INSTALL(FILES ${idas_HEADERS} ${idas_BL_HEADERS} DESTINATION include/idas)
 
 # Install the IDAS implementation header file
-#INSTALL(FILES idas_impl.h DESTINATION include/idas)
+INSTALL(FILES idas_impl.h DESTINATION include/idas)
 
 #
 MESSAGE(STATUS "Added IDAS module")

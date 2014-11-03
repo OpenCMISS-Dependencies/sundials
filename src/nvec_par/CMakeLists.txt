@@ -36,14 +36,18 @@ ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/nvector/ nvecparallel_HEADERS)
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
-  ADD_LIBRARY(sundials_nvecparallel STATIC ${nvecparallel_SOURCES} ${shared_SOURCES})
-  SET_TARGET_PROPERTIES(sundials_nvecparallel
-    PROPERTIES OUTPUT_NAME sundials_nvecparallel CLEAN_DIRECT_OUTPUT 1)
-  target_include_directories(sundials_nvecparallel PUBLIC .)  
-  #INSTALL(TARGETS sundials_nvecparallel DESTINATION lib)
+ADD_LIBRARY(sundials_nvecparallel STATIC ${nvecparallel_SOURCES} ${shared_SOURCES})
+SET_TARGET_PROPERTIES(sundials_nvecparallel
+  PROPERTIES OUTPUT_NAME sundials_nvecparallel CLEAN_DIRECT_OUTPUT 1)
+target_include_directories(sundials_nvecparallel PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)  
+INSTALL(TARGETS sundials_nvecparallel 
+    EXPORT sundials-config
+    DESTINATION lib
+    INCLUDES DESTINATION include/nvector)
 
 # Install the NVECPARALLEL header files
-#INSTALL(FILES ${nvecparallel_HEADERS} DESTINATION include/nvector)
+INSTALL(FILES ${nvecparallel_HEADERS} DESTINATION include/nvector)
 
 # If FCMIX is enabled and MPI-F77 works, build and install the FNVECPARALLEL library
 IF(FCMIX_ENABLE AND MPIF_FOUND)
@@ -53,7 +57,7 @@ IF(FCMIX_ENABLE AND MPIF_FOUND)
   SET_TARGET_PROPERTIES(sundials_fnvecparallel
     PROPERTIES OUTPUT_NAME sundials_fnvecparallel CLEAN_DIRECT_OUTPUT 1)
   target_include_directories(sundials_fnvecparallel PUBLIC .)
-  #INSTALL(TARGETS sundials_fnvecparallel DESTINATION lib)
+  INSTALL(TARGETS sundials_fnvecparallel DESTINATION lib)
 ENDIF()
 #
 MESSAGE(STATUS "Added NVECTOR_PARALLEL module")

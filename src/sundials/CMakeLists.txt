@@ -38,8 +38,8 @@ ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/sundials/ sundials_HEADERS)
 INSTALL(FILES ${sundials_HEADERS} DESTINATION include/sundials)
 
 # If Blas/Lapack support was enabled, install the Lapack interface headers
-IF(LAPACK_FOUND)
+IF(USE_LAPACK)
   SET(sundials_BL_HEADERS sundials_lapack.h)
   ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/sundials/ sundials_BL_HEADERS)
   INSTALL(FILES ${sundials_BL_HEADERS} DESTINATION include/sundials)
-ENDIF(LAPACK_FOUND)
+ENDIF()

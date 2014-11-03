@@ -28,14 +28,18 @@ ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/nvector/ nvecserial_HEADERS)
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
-  ADD_LIBRARY(sundials_nvecserial STATIC ${nvecserial_SOURCES} ${shared_SOURCES})
-  SET_TARGET_PROPERTIES(sundials_nvecserial
-    PROPERTIES OUTPUT_NAME sundials_nvecserial CLEAN_DIRECT_OUTPUT 1)
-  target_include_directories(sundials_nvecserial PUBLIC .)
-  #INSTALL(TARGETS sundials_nvecserial DESTINATION lib)
+ADD_LIBRARY(sundials_nvecserial STATIC ${nvecserial_SOURCES} ${shared_SOURCES})
+SET_TARGET_PROPERTIES(sundials_nvecserial
+  PROPERTIES OUTPUT_NAME sundials_nvecserial CLEAN_DIRECT_OUTPUT 1)
+target_include_directories(sundials_nvecserial PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+INSTALL(TARGETS sundials_nvecserial
+    EXPORT sundials-config 
+    DESTINATION lib
+    INCLUDES DESTINATION include/nvector)
 
 # Install the NVECSERIAL header files
-#INSTALL(FILES ${nvecserial_HEADERS} DESTINATION include/nvector)
+INSTALL(FILES ${nvecserial_HEADERS} DESTINATION include/nvector)
 
 # If FCMIX is enabled, build and install the FNVECSERIAL library
 IF(FCMIX_ENABLE AND F77_FOUND)

@@ -15,15 +15,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C)
 
-if (OPENCMISS_DEPENDENCIES_LIBRARIES)
-    SET(CMAKE_PREFIX_PATH ${OPENCMISS_DEPENDENCIES_CONFIGS_DIR} ${CMAKE_PREFIX_PATH})
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OPENCMISS_DEPENDENCIES_LIBRARIES})
-else()
-    SET(CMAKE_PREFIX_PATH ../cmake/release ../cmake/debug ${CMAKE_PREFIX_PATH})
-    SET(OPENCMISS_DEPENDENCIES_CONFIGS_DIR ${CMAKE_CURRENT_BINARY_DIR})
-    SET(BUILD_TESTING ON)
-    SET(USE_LAPACK ON)
-endif()
+option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
+option(USE_LAPACK "${PROJECT_NAME} - Use LAPACK routines" ON)
+set(BUILD_PRECISION sdcz CACHE STRING "${PROJECT_NAME} - Build precisions (sdcz)")
 
 IF (USE_LAPACK)
     FIND_PACKAGE(BLAS CONFIG REQUIRED)
@@ -154,8 +148,16 @@ SET(SUNDIALS_EXPORT "#define SUNDIALS_EXPORT")
 #ENDIF()
 
 # Option to specify precision
+# choices are "double, single or extended"
 # ---------------------------
-SET(SUNDIALS_PRECISION "double" CACHE STRING "double, single or extended")
+# For OpenCMISS context we use sdcz for precision choosing.
+# So we convert that here. While some packages allow to build multiple
+# precisions, we here only have one to choose - we take the bigger one if also wanted.
+if (BUILD_PRECISION MATCHES [d])
+    SET(SUNDIALS_PRECISION "double")
+elseif (BUILD_PRECISION MATCHES [s])
+    SET(SUNDIALS_PRECISION "single")
+endif()
 
 # prepare substitution variable PRECISION_LEVEL for sundials_config.h
 STRING(TOUPPER ${SUNDIALS_PRECISION} SUNDIALS_PRECISION)
@@ -187,7 +189,11 @@ ENDIF()
 # Enable BLAS/LAPACK support?
 # -------------------------------------------------------------
 #OPTION(LAPACK_ENABLE "Enable Lapack support" OFF)
-SET(LAPACK_ENABLE ON)
+if (USE_LAPACK)
+    SET(LAPACK_ENABLE ON)
+else()
+    SET(LAPACK_ENABLE OFF)
+endif()
 #IF(NOT LAPACK_ENABLE)
 #  HIDE_VARIABLE(SUNDIALS_F77_FUNC_CASE)
 #  HIDE_VARIABLE(SUNDIALS_F77_FUNC_UNDERSCORES)
@@ -210,7 +216,7 @@ SET(MPI_ENABLE ON)
 # -------------------------------------------------------------
 # Enable examples?
 # -------------------------------------------------------------
-IF (BUILD_TESTING)
+IF (BUILD_TESTS)
 
   # If examples are enabled, set different options
 
@@ -341,30 +347,18 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/include)
 # -------------------------------------------------------------
 
 # Shared components
-# This only contains information for shared headers, which are included in the
-# interface include directories for each subcomponent
-#ADD_SUBDIRECTORY(src/sundials)
+ADD_SUBDIRECTORY(src/sundials)
 ADD_SUBDIRECTORY(src/nvec_ser)
-SET(exports sundials_nvecserial)
-if (FCMIX_ENABLE AND F77_FOUND)
-    LIST(APPEND exports sundials_fnvecserial)
-endif()
 IF(MPIC_FOUND)
   ADD_SUBDIRECTORY(src/nvec_par)
-  LIST(APPEND exports sundials_nvecparallel)
-  if (FCMIX_ENABLE AND F77_FOUND)
-    LIST(APPEND exports sundials_fnvecparallel)
-endif()
 ENDIF(MPIC_FOUND)
 
 # CVODE library
 
 IF(BUILD_CVODE)	
   ADD_SUBDIRECTORY(src/cvode)
-  LIST(APPEND exports sundials_cvode)
   IF(FCMIX_ENABLE AND F77_FOUND)
     ADD_SUBDIRECTORY(src/cvode/fcmix)
-    LIST(APPEND exports sundials_fcvode)
   ENDIF()
 ENDIF()
 
@@ -372,48 +366,33 @@ ENDIF()
 
 IF(BUILD_CVODES)	
   ADD_SUBDIRECTORY(src/cvodes)
-  LIST(APPEND exports sundials_cvodes)
 ENDIF()
 
 # IDA library
-
 IF(BUILD_IDA)	
   ADD_SUBDIRECTORY(src/ida)
-  LIST(APPEND exports sundials_ida)
   IF(FCMIX_ENABLE AND F77_FOUND)
     ADD_SUBDIRECTORY(src/ida/fcmix)
-    LIST(APPEND exports sundials_fida)
   ENDIF()
 ENDIF()
 
 # IDAS library
-
 IF(BUILD_IDAS)	
   ADD_SUBDIRECTORY(src/idas)
-  LIST(APPEND exports sundials_idas)
 ENDIF(BUILD_IDAS)
 
 # KINSOL library
-
 IF(BUILD_KINSOL)	
   ADD_SUBDIRECTORY(src/kinsol)
-  LIST(APPEND exports sundials_kinsol)
   IF(FCMIX_ENABLE AND F77_FOUND)
     ADD_SUBDIRECTORY(src/kinsol/fcmix)
-    LIST(APPEND exports sundials_fkinsol)
   ENDIF(FCMIX_ENABLE AND F77_FOUND)
 ENDIF(BUILD_KINSOL)
 
 # CPODES library
-
 IF(BUILD_CPODES)	
   ADD_SUBDIRECTORY(src/cpodes)
 ENDIF(BUILD_CPODES)
-
-# Build tree export
-export(TARGETS ${exports} FILE ${OPENCMISS_DEPENDENCIES_CONFIGS_DIR}/sundials-${SUNDIALS_VERSION}/sundials-config.cmake)
-WRITE_BASIC_PACKAGE_VERSION_FILE(${OPENCMISS_DEPENDENCIES_CONFIGS_DIR}/sundials-${SUNDIALS_VERSION}/sundials-config-version.cmake
-   VERSION ${SUNDIALS_VERSION} COMPATIBILITY AnyNewerVersion)
 
 # -------------------------------------------------------------
 # Include the subdirectories corresponding to various examples
@@ -424,7 +403,7 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${OPENCMISS_DEPENDENCIES_CONFIGS_DIR}/sundials-
 # Also, if we will generate exported example Makefiles, set 
 # variables needed in generating them from templates.
 
-IF(BUILD_TESTING)
+IF(BUILD_TESTS)
 
   IF(BUILD_CVODE)
     ADD_SUBDIRECTORY(examples/cvode/serial)
@@ -486,14 +465,15 @@ IF(BUILD_TESTING)
     ENDIF(MPIC_FOUND)
   ENDIF(BUILD_CPODES)
   
-ENDIF(BUILD_TESTING)
+ENDIF(BUILD_TESTS)
 
 #----------------------------------
 # Install configuration header file
 #----------------------------------
 
 # install configured header file
-#INSTALL(
-#  FILES ${PROJECT_BINARY_DIR}/include/sundials/sundials_config.h
-#  DESTINATION include/sundials
-#  )
+INSTALL(
+  FILES ${PROJECT_BINARY_DIR}/include/sundials/sundials_config.h
+  DESTINATION include/sundials
+)
+install(EXPORT sundials-config DESTINATION lib/cmake)

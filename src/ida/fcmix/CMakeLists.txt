@@ -27,12 +27,15 @@ ADD_LIBRARY(sundials_fida STATIC ${fida_SOURCES} ${fida_BL_SOURCES})
 # Set the library name and make sure it is not deleted
 SET_TARGET_PROPERTIES(sundials_fida
   PROPERTIES OUTPUT_NAME sundials_fida CLEAN_DIRECT_OUTPUT 1)
-target_include_directories(sundials_fida PUBLIC . ..)
+target_include_directories(sundials_fida PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 IF(LAPACK_FOUND)
     target_link_libraries(sundials_fida PUBLIC lapack)
 endif()
 
 # Install the FIDA library
-#INSTALL(TARGETS sundials_fida DESTINATION lib)
+INSTALL(TARGETS sundials_fida EXPORT sundials-config
+    DESTINATION lib)
 #
 MESSAGE(STATUS "Added IDA FCMIX module")

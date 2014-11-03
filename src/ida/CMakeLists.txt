@@ -78,7 +78,9 @@ ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 ADD_LIBRARY(sundials_ida STATIC 
   ${ida_SOURCES}  ${ida_BL_SOURCES}  ${shared_SOURCES})
 
-target_include_directories(sundials_ida PUBLIC . ../sundials)
+target_include_directories(sundials_ida PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../sundials>)
 SET_TARGET_PROPERTIES(sundials_ida
   PROPERTIES OUTPUT_NAME sundials_ida CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
@@ -86,13 +88,15 @@ IF(LAPACK_FOUND)
 endif()
 
 # Install the IDA library
-#INSTALL(TARGETS sundials_ida DESTINATION lib)
+INSTALL(TARGETS sundials_ida EXPORT sundials-config 
+    DESTINATION lib
+    INCLUDES DESTINATION include/ida)
 
 # Install the IDA header files
-#INSTALL(FILES ${ida_HEADERS} ${ida_BL_HEADERS} DESTINATION include/ida)
+INSTALL(FILES ${ida_HEADERS} ${ida_BL_HEADERS} DESTINATION include/ida)
 
 # Install the IDA implementation header file
-#INSTALL(FILES ida_impl.h DESTINATION include/ida)
+INSTALL(FILES ida_impl.h DESTINATION include/ida)
 
 #
 MESSAGE(STATUS "Added IDA module")

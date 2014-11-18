@@ -20,8 +20,8 @@ option(USE_LAPACK "${PROJECT_NAME} - Use LAPACK routines" ON)
 set(BUILD_PRECISION sdcz CACHE STRING "${PROJECT_NAME} - Build precisions (sdcz)")
 
 IF (USE_LAPACK)
-    FIND_PACKAGE(BLAS CONFIG REQUIRED)
-    FIND_PACKAGE(LAPACK CONFIG REQUIRED)
+    FIND_PACKAGE(BLAS ${BLAS_VERSION} CONFIG REQUIRED)
+    FIND_PACKAGE(LAPACK ${LAPACK_VERSION} CONFIG REQUIRED)
 endif()
 FIND_PACKAGE(MPI REQUIRED)
 include(CMakePackageConfigHelpers)
@@ -477,3 +477,7 @@ INSTALL(
   DESTINATION include/sundials
 )
 install(EXPORT sundials-config DESTINATION lib/cmake)
+include(CMakePackageConfigHelpers)
+WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake COMPATIBILITY AnyNewerVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake
+    DESTINATION lib/cmake)

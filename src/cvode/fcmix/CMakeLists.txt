@@ -23,7 +23,7 @@ ENDIF(LAPACK_FOUND)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the FCVODE library
-ADD_LIBRARY(sundials_fcvode STATIC ${fcvode_SOURCES} ${fcvode_BL_SOURCES})
+ADD_LIBRARY(sundials_fcvode ${fcvode_SOURCES} ${fcvode_BL_SOURCES})
 target_include_directories(sundials_fcvode PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)

@@ -74,7 +74,7 @@ ENDIF(LAPACK_FOUND)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the static KINSOL library
-ADD_LIBRARY(sundials_kinsol STATIC
+ADD_LIBRARY(sundials_kinsol
   ${kinsol_SOURCES} ${kinsol_BL_SOURCES} ${shared_SOURCES})
 
 target_include_directories(sundials_kinsol PUBLIC

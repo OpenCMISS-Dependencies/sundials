@@ -22,7 +22,7 @@ ENDIF(LAPACK_FOUND)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the FIDA library
-ADD_LIBRARY(sundials_fida STATIC ${fida_SOURCES} ${fida_BL_SOURCES})
+ADD_LIBRARY(sundials_fida ${fida_SOURCES} ${fida_BL_SOURCES})
 
 # Set the library name and make sure it is not deleted
 SET_TARGET_PROPERTIES(sundials_fida

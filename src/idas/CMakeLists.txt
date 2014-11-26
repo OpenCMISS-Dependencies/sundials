@@ -77,7 +77,7 @@ ENDIF(LAPACK_FOUND)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the static IDAS library
-ADD_LIBRARY(sundials_idas STATIC 
+ADD_LIBRARY(sundials_idas 
   ${idas_SOURCES} ${idas_BL_SOURCES}  ${shared_SOURCES})
 target_include_directories(sundials_idas PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

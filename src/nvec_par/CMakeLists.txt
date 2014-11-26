@@ -36,7 +36,7 @@ ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/nvector/ nvecparallel_HEADERS)
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
-ADD_LIBRARY(sundials_nvecparallel STATIC ${nvecparallel_SOURCES} ${shared_SOURCES})
+ADD_LIBRARY(sundials_nvecparallel ${nvecparallel_SOURCES} ${shared_SOURCES})
 SET_TARGET_PROPERTIES(sundials_nvecparallel
   PROPERTIES OUTPUT_NAME sundials_nvecparallel CLEAN_DIRECT_OUTPUT 1)
 target_include_directories(sundials_nvecparallel PUBLIC
@@ -53,7 +53,7 @@ INSTALL(FILES ${nvecparallel_HEADERS} DESTINATION include/nvector)
 IF(FCMIX_ENABLE AND MPIF_FOUND)
   SET(fnvecparallel_SOURCES fnvector_parallel.c)
   
-  ADD_LIBRARY(sundials_fnvecparallel STATIC ${fnvecparallel_SOURCES})
+  ADD_LIBRARY(sundials_fnvecparallel ${fnvecparallel_SOURCES})
   SET_TARGET_PROPERTIES(sundials_fnvecparallel
     PROPERTIES OUTPUT_NAME sundials_fnvecparallel CLEAN_DIRECT_OUTPUT 1)
   target_include_directories(sundials_fnvecparallel PUBLIC .)

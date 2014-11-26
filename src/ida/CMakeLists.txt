@@ -75,7 +75,7 @@ ENDIF(LAPACK_FOUND)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the static IDA library
-ADD_LIBRARY(sundials_ida STATIC 
+ADD_LIBRARY(sundials_ida 
   ${ida_SOURCES}  ${ida_BL_SOURCES}  ${shared_SOURCES})
 
 target_include_directories(sundials_ida PUBLIC 

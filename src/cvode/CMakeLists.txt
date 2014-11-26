@@ -78,7 +78,7 @@ ENDIF(LAPACK_FOUND)
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the static CVODE library
-ADD_LIBRARY(sundials_cvode STATIC 
+ADD_LIBRARY(sundials_cvode 
   ${cvode_SOURCES}  ${cvode_BL_SOURCES} ${shared_SOURCES})
 target_include_directories(sundials_cvode PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

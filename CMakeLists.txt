@@ -124,8 +124,6 @@ SET(BUILD_CPODES OFF)
 # -------------------------------------------------------------
 # Other configuration options
 # -------------------------------------------------------------
-SET(BUILD_STATIC_LIBS ON)
-SET(BUILD_SHARED_LIBS OFF)
 
 # Prepare substitution variable SUNDIALS_EXPORT for sundials_config.h
 # When building shared SUNDIALS libraries under Windows, use
@@ -222,11 +220,11 @@ IF (BUILD_TESTS)
 
   # The examples will be linked with the library corresponding to the build type.
   # Whenever building shared libraries, use them to link the examples.
-  #IF(BUILD_SHARED_LIBS)
-  #  SET(LINK_LIBRARY_TYPE "shared")
-  #ELSE()
+  IF(BUILD_SHARED_LIBS)
+    SET(LINK_LIBRARY_TYPE "shared")
+  ELSE()
     SET(LINK_LIBRARY_TYPE "static")
-  #ENDIF()
+  ENDIF()
 
   # Check if example files are to be exported
   #SHOW_VARIABLE(EXAMPLES_INSTALL BOOL "Install example files" ON)

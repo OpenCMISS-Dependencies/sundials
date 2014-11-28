@@ -17,13 +17,19 @@ PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
 option(USE_LAPACK "${PROJECT_NAME} - Use LAPACK routines" ON)
+option(USE_MPI "${PROJECT_NAME} - Use MPI" ON)
 set(BUILD_PRECISION sdcz CACHE STRING "${PROJECT_NAME} - Build precisions (sdcz)")
 
-IF (USE_LAPACK)
+IF(USE_LAPACK)
     FIND_PACKAGE(BLAS ${BLAS_VERSION} REQUIRED)
     FIND_PACKAGE(LAPACK ${LAPACK_VERSION} REQUIRED)
 endif()
-FIND_PACKAGE(MPI REQUIRED)
+if(USE_MPI)
+    FIND_PACKAGE(MPI REQUIRED)
+    # We have separate code for fortran-mpi code, so we'll leave that
+    # here to have the chance of separate treatment
+    SET(USE_MPIF ${USE_MPI})
+endif()
 include(CMakePackageConfigHelpers)
 
 MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH LIBRARY_OUTPUT_PATH)
@@ -105,8 +111,8 @@ ENDMACRO(PRINT_WARNING)
 MACRO(LIST2STRING alist astring)
   FOREACH(elem ${${alist}})
    SET(${astring} "${${astring}} ${elem}")
-  ENDFOREACH(elem)
-ENDMACRO(LIST2STRING)
+  ENDFOREACH()
+ENDMACRO()
 
 # -------------------------------------------------------------
 # Which modules to build?
@@ -199,19 +205,6 @@ endif()
 #ENDIF(NOT LAPACK_ENABLE)
 
 # -------------------------------------------------------------
-# Enable MPI support?
-# -------------------------------------------------------------
-SET(MPI_ENABLE ON)
-#OPTION(MPI_ENABLE "Enable MPI support" OFF)
-#IF(NOT MPI_ENABLE)
-#  HIDE_VARIABLE(MPI_INCLUDE_PATH)
-#  HIDE_VARIABLE(MPI_LIBRARIES)
-#  HIDE_VARIABLE(MPI_EXTRA_LIBRARIES)
-#  HIDE_VARIABLE(MPI_MPICC)
-#  HIDE_VARIABLE(MPI_MPIF77)
-#ENDIF(NOT MPI_ENABLE)
-
-# -------------------------------------------------------------
 # Enable examples?
 # -------------------------------------------------------------
 IF (BUILD_TESTS)
@@ -283,47 +276,46 @@ include(FortranMangling)
 SET(BLAS_LAPACK_MACRO "#define SUNDIALS_BLAS_LAPACK 1")
 #SET(BLAS_LAPACK_MACRO "#define SUNDIALS_BLAS_LAPACK 0")
 
-#IF(LAPACK_ENABLE)
-
-  #INCLUDE(SundialsLapack)
-
-  #IF(LAPACK_FOUND)
-  #  SET(BLAS_LAPACK_MACRO "#define SUNDIALS_BLAS_LAPACK 1")
-  #ELSE(LAPACK_FOUND)
-  #  SHOW_VARIABLE(LAPACK_LIBRARIES STRING "Lapack libraries" "${LAPACK_LIBRARIES}")
-  #  SHOW_VARIABLE(LAPACK_LINKER_FLAGS STRING "Lapack required linker flags" "${LAPACK_LINKER_FLAGS}")
-  #ENDIF(LAPACK_FOUND)
-  #
-  #IF(LAPACK_LIBRARIES AND NOT LAPACK_FOUND)
-  #  PRINT_WARNING("LAPACK not functional"
-  #    "Blas/Lapack support will not be provided")
-  #ENDIF(LAPACK_LIBRARIES AND NOT LAPACK_FOUND)
-
-#ELSE(LAPACK_ENABLE)
-
-  #HIDE_VARIABLE(LAPACK_LIBRARIES)
-  #HIDE_VARIABLE(LAPACK_LINKER_FLAGS)
-
-#ENDIF(LAPACK_ENABLE)
-
 # -------------------------------------------------------------
 # Decide how to compile MPI codes.
 # -------------------------------------------------------------
-IF(MPI_ENABLE)
-  INCLUDE(SundialsMPIC)
-  IF(NOT MPIC_FOUND)
-    PRINT_WARNING("MPI not functional"
-      "Parallel support will not be provided")
-  ENDIF()
+if(USE_MPI)
+  #INCLUDE(SundialsMPIC)
+  # Create the MPITest directory
+  set(MPITest_DIR ${PROJECT_BINARY_DIR}/MPITest)
+  file(MAKE_DIRECTORY ${MPITest_DIR})
+  # Create a simple C source which calls the MPI_Comm_f2c function
+  file(WRITE ${MPITest_DIR}/mpi2test.c
+    "#include <mpi.h>\n"
+    "int main(){\n"
+    "int c;\n"
+    "char **v;\n"
+    "MPI_Comm C_comm;\n"
+    "MPI_Init(&c, &v);\n"
+    "C_comm = MPI_Comm_f2c((MPI_Fint) 1);\n"
+    "MPI_Finalize();\n"
+    "return(0);\n"
+    "}\n")
+  # Use TRY_COMPILE to make the target "mpi2test"
+  message(STATUS "Checking MPI2-compatibility ...")
+  try_compile(MPIC_MPI2 ${MPITest_DIR} 
+      SOURCES ${MPITest_DIR}/mpi2test.c
+      CMAKE_FLAGS -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+      OUTPUT_VARIABLE MY_OUTPUT)
   IF(MPIC_MPI2)
     SET(F77_MPI_COMM_F2C "#define SUNDIALS_MPI_COMM_F2C 1")
+    message(STATUS "Checking MPI2-compatibility ... YES")
   ELSE()
     SET(F77_MPI_COMM_F2C "#define SUNDIALS_MPI_COMM_F2C 0")
+    message(STATUS "Checking MPI2-compatibility ... Failed. ${MY_OUTPUT}")
   ENDIF()
-  IF(MPIC_FOUND AND FCMIX_ENABLE)
-    INCLUDE(SundialsMPIF)
-  ENDIF()
-ENDIF()
+else()
+    HIDE_VARIABLE(MPI_INCLUDE_PATH)
+    HIDE_VARIABLE(MPI_LIBRARIES)
+    HIDE_VARIABLE(MPI_EXTRA_LIBRARIES)
+    HIDE_VARIABLE(MPI_MPICC)
+    HIDE_VARIABLE(MPI_MPIF77)
+endif()
 
 # -------------------------------------------------------------
 # Configure the header file sundials_config.h
@@ -347,9 +339,9 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/include)
 # Shared components
 ADD_SUBDIRECTORY(src/sundials)
 ADD_SUBDIRECTORY(src/nvec_ser)
-IF(MPIC_FOUND)
+IF(USE_MPI)
   ADD_SUBDIRECTORY(src/nvec_par)
-ENDIF(MPIC_FOUND)
+ENDIF(USE_MPI)
 
 # CVODE library
 
@@ -408,19 +400,19 @@ IF(BUILD_TESTS)
     IF(FCMIX_ENABLE AND F77_FOUND)
       ADD_SUBDIRECTORY(examples/cvode/fcmix_serial)
     ENDIF(FCMIX_ENABLE AND F77_FOUND)
-    IF(MPIC_FOUND)
+    IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/cvode/parallel)
-    ENDIF(MPIC_FOUND)
-    IF(MPIF_FOUND)
+    ENDIF(USE_MPI)
+    IF(USE_MPIF)
       ADD_SUBDIRECTORY(examples/cvode/fcmix_parallel)
-    ENDIF(MPIF_FOUND)
+    ENDIF(USE_MPIF)
   ENDIF(BUILD_CVODE)
   
   IF(BUILD_CVODES)	
     ADD_SUBDIRECTORY(examples/cvodes/serial)
-    IF(MPIC_FOUND)
+    IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/cvodes/parallel)
-    ENDIF(MPIC_FOUND)
+    ENDIF(USE_MPI)
   ENDIF(BUILD_CVODES)
   
   IF(BUILD_IDA)
@@ -428,19 +420,19 @@ IF(BUILD_TESTS)
     IF(FCMIX_ENABLE AND F77_FOUND)
       ADD_SUBDIRECTORY(examples/ida/fcmix_serial)
     ENDIF(FCMIX_ENABLE AND F77_FOUND)
-    IF(MPIC_FOUND)
+    IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/ida/parallel)
-    ENDIF(MPIC_FOUND)
-    IF(MPIF_FOUND)
+    ENDIF(USE_MPI)
+    IF(USE_MPIF)
       ADD_SUBDIRECTORY(examples/ida/fcmix_parallel)
-    ENDIF(MPIF_FOUND)
+    ENDIF(USE_MPIF)
   ENDIF(BUILD_IDA)
   
   IF(BUILD_IDAS)	
     ADD_SUBDIRECTORY(examples/idas/serial)
-    IF(MPIC_FOUND)
+    IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/idas/parallel)
-    ENDIF(MPIC_FOUND)
+    ENDIF(USE_MPI)
   ENDIF(BUILD_IDAS)
 
   IF(BUILD_KINSOL)	
@@ -448,19 +440,19 @@ IF(BUILD_TESTS)
     IF(FCMIX_ENABLE AND F77_FOUND)
       ADD_SUBDIRECTORY(examples/kinsol/fcmix_serial)
     ENDIF(FCMIX_ENABLE AND F77_FOUND)
-    IF(MPIC_FOUND)
+    IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/kinsol/parallel)
-    ENDIF(MPIC_FOUND)
-    IF(MPIF_FOUND)
+    ENDIF(USE_MPI)
+    IF(USE_MPIF)
       ADD_SUBDIRECTORY(examples/kinsol/fcmix_parallel)
-    ENDIF(MPIF_FOUND)
+    ENDIF(USE_MPIF)
   ENDIF(BUILD_KINSOL)
 
   IF(BUILD_CPODES)	
     ADD_SUBDIRECTORY(examples/cpodes/serial)
-    IF(MPIC_FOUND)
+    IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/cpodes/parallel)
-    ENDIF(MPIC_FOUND)
+    ENDIF(USE_MPI)
   ENDIF(BUILD_CPODES)
   
 ENDIF(BUILD_TESTS)

@@ -13,7 +13,7 @@
 #
 # 
 
-set(MPIF_FOUND FALSE)
+set(USE_MPIF FALSE)
 
 # Local variable indicating whether to test MPI
 set(MPIF_PERFORM_TEST FALSE)
@@ -103,7 +103,7 @@ if(MPIF_PERFORM_TEST)
   # Process test result
   if(MPITEST_OK)
     message(STATUS "Trying to compile and link a simple MPI Fortran program... OK")
-    set(MPIF_FOUND TRUE)
+    set(USE_MPIF TRUE)
   else(MPITEST_OK)
     message(STATUS "Trying to compile and link a simple MPI Fortran program... FAILED")
   endif(MPITEST_OK)

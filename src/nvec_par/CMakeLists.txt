@@ -50,7 +50,7 @@ INSTALL(TARGETS sundials_nvecparallel
 INSTALL(FILES ${nvecparallel_HEADERS} DESTINATION include/nvector)
 
 # If FCMIX is enabled and MPI-F77 works, build and install the FNVECPARALLEL library
-IF(FCMIX_ENABLE AND MPIF_FOUND)
+IF(FCMIX_ENABLE AND USE_MPIF)
   SET(fnvecparallel_SOURCES fnvector_parallel.c)
   
   ADD_LIBRARY(sundials_fnvecparallel ${fnvecparallel_SOURCES})

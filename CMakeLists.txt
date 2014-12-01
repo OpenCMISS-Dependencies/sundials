@@ -13,7 +13,7 @@
 # Top level CMakeLists.txt for SUNDIALS (for cmake build system)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C)
+PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C Fortran)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
 option(USE_LAPACK "${PROJECT_NAME} - Use LAPACK routines" ON)
@@ -26,9 +26,46 @@ IF(USE_LAPACK)
 endif()
 if(USE_MPI)
     FIND_PACKAGE(MPI REQUIRED)
+    SET(MPI_MPICC ${MPI_C_COMPILER})
+    SET(MPI_MPIF77 ${MPI_Fortran_COMPILER})
+    #INCLUDE(SundialsMPIC)
+    # Create the MPITest directory
+    set(MPITest_DIR ${PROJECT_BINARY_DIR}/MPITest)
+    file(MAKE_DIRECTORY ${MPITest_DIR})
+    # Create a simple C source which calls the MPI_Comm_f2c function
+    file(WRITE ${MPITest_DIR}/mpi2test.c
+        "#include <mpi.h>\n"
+        "int main(){\n"
+        "int c;\n"
+        "char **v;\n"
+        "MPI_Comm C_comm;\n"
+        "MPI_Init(&c, &v);\n"
+        "C_comm = MPI_Comm_f2c((MPI_Fint) 1);\n"
+        "MPI_Finalize();\n"
+        "return(0);\n"
+        "}\n")
+    # Use TRY_COMPILE to make the target "mpi2test"
+    message(STATUS "Checking MPI2-compatibility ...")
+    try_compile(MPIC_MPI2 ${MPITest_DIR} 
+        SOURCES ${MPITest_DIR}/mpi2test.c
+        CMAKE_FLAGS -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
+        OUTPUT_VARIABLE MY_OUTPUT)
+    IF(MPIC_MPI2)
+      SET(F77_MPI_COMM_F2C "#define SUNDIALS_MPI_COMM_F2C 1")
+      message(STATUS "Checking MPI2-compatibility ... YES")
+    ELSE()
+      SET(F77_MPI_COMM_F2C "#define SUNDIALS_MPI_COMM_F2C 0")
+      message(STATUS "Checking MPI2-compatibility ... Failed. ${MY_OUTPUT}")
+    ENDIF()
     # We have separate code for fortran-mpi code, so we'll leave that
     # here to have the chance of separate treatment
     SET(USE_MPIF ${USE_MPI})
+else()
+    HIDE_VARIABLE(MPI_INCLUDE_PATH)
+    HIDE_VARIABLE(MPI_LIBRARIES)
+    HIDE_VARIABLE(MPI_EXTRA_LIBRARIES)
+    HIDE_VARIABLE(MPI_MPICC)
+    HIDE_VARIABLE(MPI_MPIF77)
 endif()
 include(CMakePackageConfigHelpers)
 
@@ -275,47 +312,6 @@ include(FortranMangling)
 # Macro to be inserted in sundials_config.h
 SET(BLAS_LAPACK_MACRO "#define SUNDIALS_BLAS_LAPACK 1")
 #SET(BLAS_LAPACK_MACRO "#define SUNDIALS_BLAS_LAPACK 0")
-
-# -------------------------------------------------------------
-# Decide how to compile MPI codes.
-# -------------------------------------------------------------
-if(USE_MPI)
-  #INCLUDE(SundialsMPIC)
-  # Create the MPITest directory
-  set(MPITest_DIR ${PROJECT_BINARY_DIR}/MPITest)
-  file(MAKE_DIRECTORY ${MPITest_DIR})
-  # Create a simple C source which calls the MPI_Comm_f2c function
-  file(WRITE ${MPITest_DIR}/mpi2test.c
-    "#include <mpi.h>\n"
-    "int main(){\n"
-    "int c;\n"
-    "char **v;\n"
-    "MPI_Comm C_comm;\n"
-    "MPI_Init(&c, &v);\n"
-    "C_comm = MPI_Comm_f2c((MPI_Fint) 1);\n"
-    "MPI_Finalize();\n"
-    "return(0);\n"
-    "}\n")
-  # Use TRY_COMPILE to make the target "mpi2test"
-  message(STATUS "Checking MPI2-compatibility ...")
-  try_compile(MPIC_MPI2 ${MPITest_DIR} 
-      SOURCES ${MPITest_DIR}/mpi2test.c
-      CMAKE_FLAGS -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
-      OUTPUT_VARIABLE MY_OUTPUT)
-  IF(MPIC_MPI2)
-    SET(F77_MPI_COMM_F2C "#define SUNDIALS_MPI_COMM_F2C 1")
-    message(STATUS "Checking MPI2-compatibility ... YES")
-  ELSE()
-    SET(F77_MPI_COMM_F2C "#define SUNDIALS_MPI_COMM_F2C 0")
-    message(STATUS "Checking MPI2-compatibility ... Failed. ${MY_OUTPUT}")
-  ENDIF()
-else()
-    HIDE_VARIABLE(MPI_INCLUDE_PATH)
-    HIDE_VARIABLE(MPI_LIBRARIES)
-    HIDE_VARIABLE(MPI_EXTRA_LIBRARIES)
-    HIDE_VARIABLE(MPI_MPICC)
-    HIDE_VARIABLE(MPI_MPIF77)
-endif()
 
 # -------------------------------------------------------------
 # Configure the header file sundials_config.h

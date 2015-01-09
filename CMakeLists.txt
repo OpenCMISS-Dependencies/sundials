@@ -29,27 +29,25 @@ if(USE_MPI)
     SET(MPI_MPICC ${MPI_C_COMPILER})
     SET(MPI_MPIF77 ${MPI_Fortran_COMPILER})
     #INCLUDE(SundialsMPIC)
-    # Create the MPITest directory
-    set(MPITest_DIR ${PROJECT_BINARY_DIR}/MPITest)
-    file(MAKE_DIRECTORY ${MPITest_DIR})
-    # Create a simple C source which calls the MPI_Comm_f2c function
-    file(WRITE ${MPITest_DIR}/mpi2test.c
-        "#include <mpi.h>\n"
-        "int main(){\n"
-        "int c;\n"
-        "char **v;\n"
-        "MPI_Comm C_comm;\n"
-        "MPI_Init(&c, &v);\n"
-        "C_comm = MPI_Comm_f2c((MPI_Fint) 1);\n"
-        "MPI_Finalize();\n"
-        "return(0);\n"
-        "}\n")
-    # Use TRY_COMPILE to make the target "mpi2test"
-    message(STATUS "Checking MPI2-compatibility ...")
-    try_compile(MPIC_MPI2 ${MPITest_DIR} 
-        SOURCES ${MPITest_DIR}/mpi2test.c
-        CMAKE_FLAGS -DCMAKE_C_COMPILER=${MPI_C_COMPILER}
-        OUTPUT_VARIABLE MY_OUTPUT)
+    
+    include(CheckCSourceCompiles)
+    set(CMAKE_REQUIRED_DEFINITIONS ${MPI_COMPILE_FLAGS})
+    set(CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
+    set(CMAKE_REQUIRED_LIBRARIES ${MPI_LIBRARIES})
+    check_c_source_compiles(
+        "#include <mpi.h>\n
+        int main(){
+        int c;
+        char **v;
+        MPI_Comm C_comm;
+        MPI_Init(&c, &v);
+        C_comm = MPI_Comm_f2c((MPI_Fint) 1);
+        MPI_Finalize();
+        return(0);
+        }" 
+        MPIC_MPI2
+    )
+    
     IF(MPIC_MPI2)
       SET(F77_MPI_COMM_F2C "#define SUNDIALS_MPI_COMM_F2C 1")
       message(STATUS "Checking MPI2-compatibility ... YES")

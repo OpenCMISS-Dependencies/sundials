@@ -14,19 +14,20 @@ SET(fida_SOURCES
 
 IF(LAPACK_FOUND)
   SET(fida_BL_SOURCES fidalapack.c fidalapdense.c fidalapband.c)
-ELSE(LAPACK_FOUND)
+ELSE()
   SET(fida_BL_SOURCES "")
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the FIDA library
-ADD_LIBRARY(sundials_fida ${fida_SOURCES} ${fida_BL_SOURCES})
+ADD_LIBRARY(sundials_fida STATIC ${fida_SOURCES} ${fida_BL_SOURCES})
 
 # Set the library name and make sure it is not deleted
 SET_TARGET_PROPERTIES(sundials_fida
   PROPERTIES OUTPUT_NAME sundials_fida CLEAN_DIRECT_OUTPUT 1)
+target_link_libraries(sundials_fida PUBLIC sundials_ida)
 target_include_directories(sundials_fida PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)

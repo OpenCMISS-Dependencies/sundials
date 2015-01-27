@@ -39,6 +39,7 @@ ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 ADD_LIBRARY(sundials_nvecparallel ${nvecparallel_SOURCES} ${shared_SOURCES})
 SET_TARGET_PROPERTIES(sundials_nvecparallel
   PROPERTIES OUTPUT_NAME sundials_nvecparallel CLEAN_DIRECT_OUTPUT 1)
+target_link_libraries(sundials_nvecparallel PUBLIC ${MPI_C_LIBRARIES})
 target_include_directories(sundials_nvecparallel PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)  
 INSTALL(TARGETS sundials_nvecparallel 
@@ -52,10 +53,10 @@ INSTALL(FILES ${nvecparallel_HEADERS} DESTINATION include/nvector)
 # If FCMIX is enabled and MPI-F77 works, build and install the FNVECPARALLEL library
 IF(FCMIX_ENABLE AND USE_MPIF)
   SET(fnvecparallel_SOURCES fnvector_parallel.c)
-  
   ADD_LIBRARY(sundials_fnvecparallel ${fnvecparallel_SOURCES})
   SET_TARGET_PROPERTIES(sundials_fnvecparallel
     PROPERTIES OUTPUT_NAME sundials_fnvecparallel CLEAN_DIRECT_OUTPUT 1)
+  target_link_libraries(sundials_fnvecparallel PUBLIC sundials_nvecparallel)
   target_include_directories(sundials_fnvecparallel PUBLIC .)
   INSTALL(TARGETS sundials_fnvecparallel DESTINATION lib)
 ENDIF()

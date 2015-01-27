@@ -13,17 +13,33 @@
 # Top level CMakeLists.txt for SUNDIALS (for cmake build system)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
-PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C Fortran)
+PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
 option(USE_LAPACK "${PROJECT_NAME} - Use LAPACK routines" ON)
 option(USE_MPI "${PROJECT_NAME} - Use MPI" ON)
+option(BUILD_FORTRAN "${PROJECT_NAME} - Build Fortran interfaces" ON)
 set(BUILD_PRECISION sdcz CACHE STRING "${PROJECT_NAME} - Build precisions (sdcz)")
+
+SET(FCMIX_ENABLE NO)
+if (BUILD_FORTRAN)
+    enable_language(Fortran)
+    # Added by D. Wirtz - using cmake caps now for fortran/c interfacing
+    include(FortranCInterface)
+    FortranCInterface_HEADER(${CMAKE_CURRENT_BINARY_DIR}/sundials/sundials_fortran.h
+                             MACRO_NAMESPACE SUNDIALS_FORTRAN_C_)
+    FortranCInterface_VERIFY()
+    # Add globally to include directories
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})
+    SET(FCMIX_ENABLE YES)
+endif()
 
 IF(USE_LAPACK)
     FIND_PACKAGE(BLAS ${BLAS_VERSION} REQUIRED)
     FIND_PACKAGE(LAPACK ${LAPACK_VERSION} REQUIRED)
+    SET(SUNDIALS_BLAS_LAPACK YES)
 endif()
+
 if(USE_MPI)
     FIND_PACKAGE(MPI REQUIRED)
     SET(MPI_MPICC ${MPI_C_COMPILER})
@@ -58,14 +74,10 @@ if(USE_MPI)
     # We have separate code for fortran-mpi code, so we'll leave that
     # here to have the chance of separate treatment
     SET(USE_MPIF ${USE_MPI})
-else()
-    HIDE_VARIABLE(MPI_INCLUDE_PATH)
-    HIDE_VARIABLE(MPI_LIBRARIES)
-    HIDE_VARIABLE(MPI_EXTRA_LIBRARIES)
-    HIDE_VARIABLE(MPI_MPICC)
-    HIDE_VARIABLE(MPI_MPIF77)
 endif()
 include(CMakePackageConfigHelpers)
+
+
 
 MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH LIBRARY_OUTPUT_PATH)
 MARK_AS_ADVANCED(CLEAR
@@ -103,15 +115,15 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
 MACRO(HIDE_VARIABLE var)
   IF(DEFINED ${var})
     SET(${var} "${${var}}" CACHE INTERNAL "")
-  ENDIF(DEFINED ${var})
+  ENDIF()
 ENDMACRO(HIDE_VARIABLE)
 
 MACRO(SHOW_VARIABLE var type doc default)
   IF(DEFINED ${var})
     SET(${var} "${${var}}" CACHE "${type}" "${doc}" FORCE)
-  ELSE(DEFINED ${var})
+  ELSE()
     SET(${var} "${default}" CACHE "${type}" "${doc}")
-  ENDIF(DEFINED ${var})
+  ENDIF()
 ENDMACRO(SHOW_VARIABLE)
 
 # Macros to append a common suffix or prefix to the elements of a list
@@ -136,7 +148,7 @@ ENDMACRO(ADD_PREFIX)
 # due to some failure.
 
 MACRO(PRINT_WARNING message action)
-  MESSAGE("WARNING: ${message}.\n   ${action}.")
+  MESSAGE(WARNING "${message}.\n   ${action}.")
 ENDMACRO(PRINT_WARNING)
 
 # Returns an unquoted string.  Note that CMake will readily turn such
@@ -162,29 +174,14 @@ SET(BUILD_IDAS ON)
 SET(BUILD_KINSOL ON)
 # Not included in source
 SET(BUILD_CPODES OFF)
+
 # -------------------------------------------------------------
 # Other configuration options
 # -------------------------------------------------------------
-
-# Prepare substitution variable SUNDIALS_EXPORT for sundials_config.h
-# When building shared SUNDIALS libraries under Windows, use
-#      #define SUNDIALS_EXPORT __declspec(dllexport)
-# When linking to shared SUNDIALS libraries under Windows, use
-#      #define SUNDIALS_EXPORT __declspec(dllimport)
-# In all other cases (other platforms or static libraries
-# under Windows), the SUNDIALS_EXPORT macro is empty
-SET(SUNDIALS_EXPORT "#define SUNDIALS_EXPORT")
-
-#IF(BUILD_SHARED_LIBS AND WIN32)
-#  SET(SUNDIALS_EXPORT
-#    "#ifdef BUILD_SUNDIALS_LIBRARY
-#define SUNDIALS_EXPORT __declspec(dllexport)
-#else
-#define SUNDIALS_EXPORT __declspec(dllimport)
-#endif")
-#ELSE()
-#  
-#ENDIF()
+# DLL-Export declarations under windows/shared libs (for sundials_config.h)
+if (WIN32 AND BUILD_SHARED_LIBS)
+    SET(SUNDIALS_DLL_DECL YES)
+endif()
 
 # Option to specify precision
 # choices are "double, single or extended"
@@ -209,51 +206,19 @@ IF(UNIX)
     SET(EXTRA_LINK_LIBS m)
     # prepare substitution variable GENERIC_MATH_LIB for sundials_config.h
     SET(GENERIC_MATH_LIB "#define SUNDIALS_USE_GENERIC_MATH")
-ENDIF(UNIX)
+ENDIF()
 
 # -------------------------------------------------------------
 # Enable Fortran support?
 # -------------------------------------------------------------
 # FCMIX support is an option only if at least one solver that 
 # provides such an interface is built.
-
-IF(BUILD_CVODE OR BUILD_IDA OR BUILD_KINSOL)
-  SET(FCMIX_ENABLE ON)  
-  #SHOW_VARIABLE(FCMIX_ENABLE BOOL "Enable Fortran-C support" OFF)
-#ELSE()
-#  HIDE_VARIABLE(FCMIX_ENABLE)
-ENDIF()
-
-# -------------------------------------------------------------
-# Enable BLAS/LAPACK support?
-# -------------------------------------------------------------
-#OPTION(LAPACK_ENABLE "Enable Lapack support" OFF)
-if (USE_LAPACK)
-    SET(LAPACK_ENABLE ON)
-else()
-    SET(LAPACK_ENABLE OFF)
-endif()
-#IF(NOT LAPACK_ENABLE)
-#  HIDE_VARIABLE(SUNDIALS_F77_FUNC_CASE)
-#  HIDE_VARIABLE(SUNDIALS_F77_FUNC_UNDERSCORES)
-#  HIDE_VARIABLE(LAPACK_LIBRARIES)
-#ENDIF(NOT LAPACK_ENABLE)
+SET(FCMIX_ENABLE ON)
 
 # -------------------------------------------------------------
 # Enable examples?
 # -------------------------------------------------------------
 IF (BUILD_TESTS)
-
-  # If examples are enabled, set different options
-
-  # The examples will be linked with the library corresponding to the build type.
-  # Whenever building shared libraries, use them to link the examples.
-  IF(BUILD_SHARED_LIBS)
-    SET(LINK_LIBRARY_TYPE "shared")
-  ELSE()
-    SET(LINK_LIBRARY_TYPE "static")
-  ENDIF()
-
   # Check if example files are to be exported
   #SHOW_VARIABLE(EXAMPLES_INSTALL BOOL "Install example files" ON)
 
@@ -268,13 +233,13 @@ IF (BUILD_TESTS)
   #      "Example installation path was reset to its default value")
   #    SET(EXAMPLES_INSTALL_PATH "${CMAKE_INSTALL_PREFIX}/examples" CACHE STRING
   #      "Output directory for installing example files" FORCE)
-  #  ENDIF(NOT EXAMPLES_INSTALL_PATH)
+  #  ENDIF()
 
-  #ELSE(EXAMPLES_INSTALL)
+  #ELSE()
 
   #  HIDE_VARIABLE(EXAMPLES_INSTALL_PATH)
 
-  #ENDIF(EXAMPLES_INSTALL)
+  #ENDIF()
 
 ELSE()
 
@@ -295,21 +260,7 @@ ENDIF()
 
 IF(WIN32)
   ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
-ENDIF(WIN32)
-
-# Fortran linking stuff
-include(FortranMangling)
-
-# -------------------------------------------------------------
-# Find (and test) the Lapack libraries
-# -------------------------------------------------------------
-
-# If LAPACK is needed, first try to find the appropriate
-# libraries and linker flags needed to link against them.
-
-# Macro to be inserted in sundials_config.h
-SET(BLAS_LAPACK_MACRO "#define SUNDIALS_BLAS_LAPACK 1")
-#SET(BLAS_LAPACK_MACRO "#define SUNDIALS_BLAS_LAPACK 0")
+ENDIF()
 
 # -------------------------------------------------------------
 # Configure the header file sundials_config.h
@@ -335,19 +286,18 @@ ADD_SUBDIRECTORY(src/sundials)
 ADD_SUBDIRECTORY(src/nvec_ser)
 IF(USE_MPI)
   ADD_SUBDIRECTORY(src/nvec_par)
-ENDIF(USE_MPI)
+ENDIF()
 
 # CVODE library
 
 IF(BUILD_CVODE)	
   ADD_SUBDIRECTORY(src/cvode)
-  IF(FCMIX_ENABLE AND F77_FOUND)
+  IF(FCMIX_ENABLE)
     ADD_SUBDIRECTORY(src/cvode/fcmix)
   ENDIF()
 ENDIF()
 
 # CVODES library
-
 IF(BUILD_CVODES)	
   ADD_SUBDIRECTORY(src/cvodes)
 ENDIF()
@@ -355,7 +305,7 @@ ENDIF()
 # IDA library
 IF(BUILD_IDA)	
   ADD_SUBDIRECTORY(src/ida)
-  IF(FCMIX_ENABLE AND F77_FOUND)
+  IF(FCMIX_ENABLE)
     ADD_SUBDIRECTORY(src/ida/fcmix)
   ENDIF()
 ENDIF()
@@ -363,20 +313,20 @@ ENDIF()
 # IDAS library
 IF(BUILD_IDAS)	
   ADD_SUBDIRECTORY(src/idas)
-ENDIF(BUILD_IDAS)
+ENDIF()
 
 # KINSOL library
 IF(BUILD_KINSOL)	
   ADD_SUBDIRECTORY(src/kinsol)
-  IF(FCMIX_ENABLE AND F77_FOUND)
+  IF(FCMIX_ENABLE)
     ADD_SUBDIRECTORY(src/kinsol/fcmix)
-  ENDIF(FCMIX_ENABLE AND F77_FOUND)
-ENDIF(BUILD_KINSOL)
+  ENDIF()
+ENDIF()
 
 # CPODES library
 IF(BUILD_CPODES)	
   ADD_SUBDIRECTORY(src/cpodes)
-ENDIF(BUILD_CPODES)
+ENDIF()
 
 # -------------------------------------------------------------
 # Include the subdirectories corresponding to various examples
@@ -391,65 +341,65 @@ IF(BUILD_TESTS)
 
   IF(BUILD_CVODE)
     ADD_SUBDIRECTORY(examples/cvode/serial)
-    IF(FCMIX_ENABLE AND F77_FOUND)
+    IF(FCMIX_ENABLE)
       ADD_SUBDIRECTORY(examples/cvode/fcmix_serial)
-    ENDIF(FCMIX_ENABLE AND F77_FOUND)
+    ENDIF()
     IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/cvode/parallel)
-    ENDIF(USE_MPI)
+    ENDIF()
     IF(USE_MPIF)
       ADD_SUBDIRECTORY(examples/cvode/fcmix_parallel)
-    ENDIF(USE_MPIF)
-  ENDIF(BUILD_CVODE)
+    ENDIF()
+  ENDIF()
   
   IF(BUILD_CVODES)	
     ADD_SUBDIRECTORY(examples/cvodes/serial)
     IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/cvodes/parallel)
-    ENDIF(USE_MPI)
-  ENDIF(BUILD_CVODES)
+    ENDIF()
+  ENDIF()
   
   IF(BUILD_IDA)
     ADD_SUBDIRECTORY(examples/ida/serial)
-    IF(FCMIX_ENABLE AND F77_FOUND)
+    IF(FCMIX_ENABLE)
       ADD_SUBDIRECTORY(examples/ida/fcmix_serial)
-    ENDIF(FCMIX_ENABLE AND F77_FOUND)
+    ENDIF()
     IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/ida/parallel)
-    ENDIF(USE_MPI)
+    ENDIF()
     IF(USE_MPIF)
       ADD_SUBDIRECTORY(examples/ida/fcmix_parallel)
-    ENDIF(USE_MPIF)
-  ENDIF(BUILD_IDA)
+    ENDIF()
+  ENDIF()
   
   IF(BUILD_IDAS)	
     ADD_SUBDIRECTORY(examples/idas/serial)
     IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/idas/parallel)
-    ENDIF(USE_MPI)
-  ENDIF(BUILD_IDAS)
+    ENDIF()
+  ENDIF()
 
   IF(BUILD_KINSOL)	
     ADD_SUBDIRECTORY(examples/kinsol/serial)
-    IF(FCMIX_ENABLE AND F77_FOUND)
+    IF(FCMIX_ENABLE)
       ADD_SUBDIRECTORY(examples/kinsol/fcmix_serial)
-    ENDIF(FCMIX_ENABLE AND F77_FOUND)
+    ENDIF()
     IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/kinsol/parallel)
-    ENDIF(USE_MPI)
+    ENDIF()
     IF(USE_MPIF)
       ADD_SUBDIRECTORY(examples/kinsol/fcmix_parallel)
-    ENDIF(USE_MPIF)
-  ENDIF(BUILD_KINSOL)
+    ENDIF()
+  ENDIF()
 
   IF(BUILD_CPODES)	
     ADD_SUBDIRECTORY(examples/cpodes/serial)
     IF(USE_MPI)
       ADD_SUBDIRECTORY(examples/cpodes/parallel)
-    ENDIF(USE_MPI)
-  ENDIF(BUILD_CPODES)
+    ENDIF()
+  ENDIF()
   
-ENDIF(BUILD_TESTS)
+ENDIF()
 
 #----------------------------------
 # Install configuration header file
@@ -460,6 +410,12 @@ INSTALL(
   FILES ${PROJECT_BINARY_DIR}/include/sundials/sundials_config.h
   DESTINATION include/sundials
 )
+if (FCMIX_ENABLE)
+    INSTALL(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/sundials/sundials_fortran.h
+      DESTINATION include/sundials
+    )
+endif()
 install(EXPORT sundials-config DESTINATION lib/cmake)
 include(CMakePackageConfigHelpers)
 WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake COMPATIBILITY AnyNewerVersion)

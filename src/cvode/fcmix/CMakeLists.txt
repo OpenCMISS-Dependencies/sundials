@@ -15,15 +15,16 @@ SET(fcvode_SOURCES
 
 IF(LAPACK_FOUND)
   SET(fcvode_BL_SOURCES fcvlapack.c fcvlapband.c fcvlapdense.c)
-ELSE(LAPACK_FOUND)
+ELSE()
   SET(fcvode_BL_SOURCES "")
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the FCVODE library
-ADD_LIBRARY(sundials_fcvode ${fcvode_SOURCES} ${fcvode_BL_SOURCES})
+ADD_LIBRARY(sundials_fcvode STATIC ${fcvode_SOURCES} ${fcvode_BL_SOURCES})
+target_link_libraries(sundials_fcvode PUBLIC sundials_cvode)
 target_include_directories(sundials_fcvode PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)

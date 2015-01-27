@@ -28,18 +28,9 @@ SET(FCVODE_examples_BL
   fcvRoberts_dnsL
   )
 
-# Specify libraries to link against (through the target that was used to 
-# generate them) based on the value of the variable LINK_LIBRARY_TYPE
-
-IF(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(CVODE_LIB sundials_cvode)
-  SET(NVECS_LIB sundials_nvecserial)
-  SET(FNVECS_LIB sundials_fnvecserial)
-ELSE(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(CVODE_LIB sundials_cvode_shared)
-  SET(NVECS_LIB sundials_nvecserial_shared)
-  SET(FNVECS_LIB sundials_fnvecserial_shared)
-ENDIF(LINK_LIBRARY_TYPE MATCHES "static")
+SET(CVODE_LIB sundials_cvode)
+SET(NVECS_LIB sundials_nvecserial)
+SET(FNVECS_LIB sundials_fnvecserial)
 
 # Only static FCMIX libraries are available
 
@@ -51,7 +42,7 @@ SET(SUNDIALS_LIBS ${FCVODE_LIB} ${CVODE_LIB} ${FNVECS_LIB} ${NVECS_LIB} ${EXTRA_
 IF(LAPACK_FOUND)
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LAPACK_LINKER_FLAGS}")
   LIST(APPEND SUNDIALS_LIBS lapack)
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 # Add the build and install targets for each FCVODE example
 
@@ -60,7 +51,7 @@ FOREACH(example ${FCVODE_examples})
   TARGET_LINK_LIBRARIES(${example} ${SUNDIALS_LIBS})
   IF(EXAMPLES_INSTALL)
     INSTALL(FILES ${example}.f ${example}.out DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/fcmix_serial)
-  ENDIF(EXAMPLES_INSTALL)
+  ENDIF()
 ENDFOREACH(example ${FCVODE_examples})
 
 # Add the build and install targets for each Lapack FCVODE example (if needed)
@@ -71,9 +62,9 @@ IF(LAPACK_FOUND)
     TARGET_LINK_LIBRARIES(${example} ${SUNDIALS_LIBS})
     IF(EXAMPLES_INSTALL)
       INSTALL(FILES ${example}.f ${example}.out DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/fcmix_serial)
-    ENDIF(EXAMPLES_INSTALL)
+    ENDIF()
   ENDFOREACH(example ${FCVODE_examples_BL})
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 IF(EXAMPLES_INSTALL)
 
@@ -87,9 +78,9 @@ IF(EXAMPLES_INSTALL)
   LIST2STRING(FCVODE_examples EXAMPLES)
   IF(LAPACK_FOUND)
     LIST2STRING(FCVODE_examples_BL EXAMPLES_BL)
-  ELSE(LAPACK_FOUND)
+  ELSE()
     SET(EXAMPLES_BL "")
-  ENDIF(LAPACK_FOUND)
+  ENDIF()
 
   # Regardless of the platform we're on, we will generate and install 
   # CMakeLists.txt file for building the examples. This file  can then 
@@ -125,6 +116,6 @@ IF(EXAMPLES_INSTALL)
       DESTINATION ${EXAMPLES_INSTALL_PATH}/cvode/fcmix_serial 
       RENAME Makefile
       )
-  ENDIF(UNIX)
+  ENDIF()
 
-ENDIF(EXAMPLES_INSTALL)
+ENDIF()

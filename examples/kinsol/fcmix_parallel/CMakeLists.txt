@@ -25,23 +25,14 @@ SET(FKINSOL_examples
 IF(MPI_MPIF77 )
   # use MPI_MPIF77 as the compiler
   SET(CMAKE_Fortran_COMPILER ${MPI_MPIF77})
-ELSE(MPI_MPIF77)
+ELSE()
   # add MPI_INCLUDE_PATH to include directories
   INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
-ENDIF(MPI_MPIF77)
+ENDIF()
 
-# Specify libraries to link against (through the target that was used to 
-# generate them) based on the value of the variable LINK_LIBRARY_TYPE
-
-IF(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(KINSOL_LIB sundials_kinsol)
-  SET(NVECP_LIB sundials_nvecparallel)
-  SET(FNVECP_LIB sundials_fnvecparallel)
-ELSE(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(KINSOL_LIB sundials_kinsol_shared)
-  SET(NVECP_LIB sundials_nvecparallel_shared)
-  SET(FNVECP_LIB sundials_fnvecparallel_shared)
-ENDIF(LINK_LIBRARY_TYPE MATCHES "static")
+SET(KINSOL_LIB sundials_kinsol)
+SET(NVECP_LIB sundials_nvecparallel)
+SET(FNVECP_LIB sundials_fnvecparallel)
 
 # Only static FCMIX libraries are available
 
@@ -53,7 +44,7 @@ SET(SUNDIALS_LIBS ${FKINSOL_LIB} ${KINSOL_LIB} ${FNVECP_LIB} ${NVECP_LIB} ${EXTR
 IF(LAPACK_FOUND)
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LAPACK_LINKER_FLAGS}")
   LIST(APPEND SUNDIALS_LIBS lapack)
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 # Add the build and install targets for each KINSOL example
 
@@ -62,10 +53,10 @@ FOREACH(example ${FKINSOL_examples})
   TARGET_LINK_LIBRARIES(${example} ${SUNDIALS_LIBS})
   IF(NOT MPI_MPIF77)
     TARGET_LINK_LIBRARIES(${example} ${MPI_LIBRARY} ${MPI_EXTRA_LIBRARIES})
-  ENDIF(NOT MPI_MPIF77)
+  ENDIF()
   IF(EXAMPLES_INSTALL)
     INSTALL(FILES ${example}.f ${example}.out DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel)
-  ENDIF(EXAMPLES_INSTALL)
+  ENDIF()
 ENDFOREACH(example ${FKINSOL_examples})
 
 IF(EXAMPLES_INSTALL)
@@ -113,7 +104,7 @@ IF(EXAMPLES_INSTALL)
       DESTINATION ${EXAMPLES_INSTALL_PATH}/kinsol/fcmix_parallel 
       RENAME Makefile
       )
-  ENDIF(UNIX)
+  ENDIF()
 
-ENDIF(EXAMPLES_INSTALL)
+ENDIF()
 

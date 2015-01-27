@@ -12,9 +12,9 @@ SET(fkinsol_SOURCES
 
 IF(LAPACK_FOUND)
   SET(fkinsol_BL_SOURCES fkinlapack.c fkinlapdense.c fkinlapband.c)
-ELSE(LAPACK_FOUND)
+ELSE()
   SET(fkinsol_BL_SOURCES "")
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)

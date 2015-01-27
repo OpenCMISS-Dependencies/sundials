@@ -65,10 +65,10 @@ IF(LAPACK_FOUND)
   SET(kinsol_BL_SOURCES kinsol_lapack.c)
   SET(kinsol_BL_HEADERS kinsol_lapack.h)
   ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/kinsol/ kinsol_BL_HEADERS)
-ELSE(LAPACK_FOUND)
+ELSE()
   SET(kinsol_BL_SOURCES "")
   SET(kinsol_BL_HEADERS "")
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)

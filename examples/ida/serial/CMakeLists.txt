@@ -29,16 +29,8 @@ SET(IDA_examples
 SET(IDA_examples_BL
   )
 
-# Specify libraries to link against (through the target that was used to 
-# generate them) based on the value of the variable LINK_LIBRARY_TYPE
-
-IF(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(IDA_LIB sundials_ida)
-  SET(NVECS_LIB sundials_nvecserial)
-ELSE(LINK_LIBRARY_TYPE MATCHES "static")
-  SET(IDA_LIB sundials_ida_shared)
-  SET(NVECS_LIB sundials_nvecserial_shared)
-ENDIF(LINK_LIBRARY_TYPE MATCHES "static")
+SET(IDA_LIB sundials_ida)
+SET(NVECS_LIB sundials_nvecserial)
 
 # Set-up linker flags and link libraries
 
@@ -46,7 +38,7 @@ SET(SUNDIALS_LIBS ${IDA_LIB} ${NVECS_LIB} ${EXTRA_LINK_LIBS})
 IF(LAPACK_FOUND)
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LAPACK_LINKER_FLAGS}")
   LIST(APPEND SUNDIALS_LIBS lapack)
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 # Add the build and install targets for each IDA example
 
@@ -55,7 +47,7 @@ FOREACH(example ${IDA_examples})
   TARGET_LINK_LIBRARIES(${example} ${SUNDIALS_LIBS} ${NVECS_LIB} ${EXTRA_LINK_LIBS})
   IF(EXAMPLES_INSTALL)
     INSTALL(FILES ${example}.c ${example}.out DESTINATION ${EXAMPLES_INSTALL_PATH}/ida/serial)
-  ENDIF(EXAMPLES_INSTALL)
+  ENDIF()
 ENDFOREACH(example ${IDA_examples})
 
 # If Lapack support is enabled, add the build and install targets for
@@ -67,9 +59,9 @@ IF(LAPACK_FOUND)
     TARGET_LINK_LIBRARIES(${example} ${SUNDIALS_LIBS})
     IF(EXAMPLES_INSTALL)
       INSTALL(FILES ${example}.c ${example}.out DESTINATION ${EXAMPLES_INSTALL_PATH}/ida/serial)
-    ENDIF(EXAMPLES_INSTALL)
+    ENDIF()
   ENDFOREACH(example ${IDA_examples_BL})
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 IF(EXAMPLES_INSTALL)
 
@@ -82,9 +74,9 @@ IF(EXAMPLES_INSTALL)
   LIST2STRING(IDA_examples EXAMPLES)
   IF(LAPACK_FOUND)
     LIST2STRING(IDA_examples_BL EXAMPLES_BL)
-  ELSE(LAPACK_FOUND)
+  ELSE()
     SET(EXAMPLES_BL "")
-  ENDIF(LAPACK_FOUND)
+  ENDIF()
 
   # Regardless of the platform we're on, we will generate and install 
   # CMakeLists.txt file for building the examples. This file  can then 
@@ -120,6 +112,6 @@ IF(EXAMPLES_INSTALL)
       DESTINATION ${EXAMPLES_INSTALL_PATH}/ida/serial 
       RENAME Makefile
       )
-  ENDIF(UNIX)
+  ENDIF()
 
-ENDIF(EXAMPLES_INSTALL)
+ENDIF()

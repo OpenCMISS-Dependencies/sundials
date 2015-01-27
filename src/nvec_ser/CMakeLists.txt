@@ -42,14 +42,15 @@ INSTALL(TARGETS sundials_nvecserial
 INSTALL(FILES ${nvecserial_HEADERS} DESTINATION include/nvector)
 
 # If FCMIX is enabled, build and install the FNVECSERIAL library
-IF(FCMIX_ENABLE AND F77_FOUND)
+IF(FCMIX_ENABLE)
   SET(fnvecserial_SOURCES fnvector_serial.c)
   ADD_LIBRARY(sundials_fnvecserial ${fnvecserial_SOURCES})
   SET_TARGET_PROPERTIES(sundials_fnvecserial
     PROPERTIES OUTPUT_NAME sundials_fnvecserial CLEAN_DIRECT_OUTPUT 1)
+  target_link_libraries(sundials_fnvecserial PUBLIC sundials_nvecserial)
   target_include_directories(sundials_fnvecserial PUBLIC .)
     #INSTALL(TARGETS sundials_fnvecserial DESTINATION lib)
-ENDIF(FCMIX_ENABLE AND F77_FOUND)
+ENDIF()
 
 #
 MESSAGE(STATUS "Added NVECTOR_SERIAL module")

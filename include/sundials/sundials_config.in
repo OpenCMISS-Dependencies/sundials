@@ -17,6 +17,15 @@
 /* Define SUNDIALS version number */
 #define SUNDIALS_PACKAGE_VERSION "@PACKAGE_VERSION@"
 
+/* Modified Fortran/C interface by D. Wirtz - using cmake capabilities now */
+#cmakedefine FCMIX_ENABLE 1
+
+#ifdef FCMIX_ENABLE
+	#include <sundials/sundials_fortran.h>
+	#define SUNDIALS_F77_FUNC(name,NAME) SUNDIALS_FORTRAN_C_GLOBAL(name,NAME)
+	#define SUNDIALS_F77_FUNC_(name,NAME) SUNDIALS_FORTRAN_C_GLOBAL(name,NAME)
+#endif
+
 /* FCMIX: Define Fortran name-mangling macro for C identifiers.
  * Depending on the inferred scheme, one of the following six
  * macros will be defined:
@@ -26,13 +35,12 @@
  *     #define SUNDIALS_F77_FUNC(name,NAME) NAME
  *     #define SUNDIALS_F77_FUNC(name,NAME) NAME ## _
  *     #define SUNDIALS_F77_FUNC(name,NAME) NAME ## __
+ * @F77_MANGLE_MACRO1@
  */
-@F77_MANGLE_MACRO1@
-
 /* FCMIX: Define Fortran name-mangling macro for C identifiers
  *        which contain underscores.
+ * @F77_MANGLE_MACRO2@
  */
-@F77_MANGLE_MACRO2@
 
 /* Define precision of SUNDIALS data type 'realtype' 
  * Depending on the precision level, one of the following 
@@ -55,7 +63,7 @@
  * otherwise
  *     #define SUNDIALS_BLAS_LAPACK 0
  */
-@BLAS_LAPACK_MACRO@
+#cmakedefine SUNDIALS_BLAS_LAPACK 1
 
 /* FNVECTOR: Allow user to specify different MPI communicator
  * If it was found that the MPI implementation supports MPI_Comm_f2c, then
@@ -63,7 +71,7 @@
  * otherwise
  *      #define SUNDIALS_MPI_COMM_F2C 0
  */
-@F77_MPI_COMM_F2C@
+#cmakedefine SUNDIALS_MPI_COMM_F2C 1
 
 /* Mark SUNDIALS API functions for export/import
  * When building shared SUNDIALS libraries under Windows, use
@@ -73,4 +81,14 @@
  * In all other cases (other platforms or static libraries under
  * Windows), the SUNDIALS_EXPORT macro is empty
  */
-@SUNDIALS_EXPORT@
+#cmakedefine SUNDIALS_DLL_DECL 1
+
+#ifdef SUNDIALS_DLL_DECL
+	#ifdef BUILD_SUNDIALS_LIBRARY
+		#define SUNDIALS_EXPORT __declspec(dllexport)
+	#else
+		#define SUNDIALS_EXPORT __declspec(dllimport)
+	#endif
+#else
+	#define SUNDIALS_EXPORT
+#endif

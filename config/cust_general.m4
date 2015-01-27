@@ -66,7 +66,7 @@ fi
 ])
 
 
-# _AC_LINKONLY_IFELSE(PROGRAM, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
+# _AC_LINKONLY_IFELSE()
 # ------------------------------------------------------------------
 # Try to link PROGRAM (empty).
 # This macro can be used during the selection of a compiler.
@@ -84,11 +84,11 @@ rm -f conftest.err conftest.$ac_objext \
 ])# _AC_LINKONLY_IFELSE
 
 
-# AC_LINKONLY_IFELSE(PROGRAM, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
+# AC_LINKONLY_IFELSE()
 # -----------------------------------------------------------------
 # Try to link PROGRAM.  Requires that the compiler for the current
 # language was checked for, hence do not use this macro in macros looking
 # for a compiler.
 AC_DEFUN([AC_LINKONLY_IFELSE],
 [AC_LANG_COMPILER_REQUIRE()dnl
-_AC_LINKONLY_IFELSE($@)])
+_AC_LINKONLY_IFELSE()

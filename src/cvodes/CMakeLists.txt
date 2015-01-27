@@ -71,10 +71,10 @@ IF(LAPACK_FOUND)
   SET(cvodes_BL_SOURCES cvodes_lapack.c)
   SET(cvodes_BL_HEADERS cvodes_lapack.h)
   ADD_PREFIX(${SUNDIALS_SOURCE_DIR}/include/cvodes/ cvodes_BL_HEADERS)
-ELSE(LAPACK_FOUND)
+ELSE()
   SET(cvodes_BL_SOURCES "")
   SET(cvodes_BL_HEADERS "")
-ENDIF(LAPACK_FOUND)
+ENDIF()
 
 # Define C preprocessor flag -DBUILD_SUNDIALS_LIBRARY 
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)

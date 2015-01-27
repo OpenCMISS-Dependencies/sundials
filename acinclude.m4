@@ -909,7 +909,7 @@ AC_LANG_PUSH([C])
 # Check if CC can link Fortran example
 # Note: AC_LINKONLY_IFELSE is a custom macro (modifications made to
 # general.m4 and c.m4) (see config/cust_general.m4 and config/mod_c.m4)
-AC_LINKONLY_IFELSE([],[F77_LNKR_CHECK_OK="yes"],[F77_LNKR_CHECK_OK="no"])
+AC_LINKONLY_IFELSE()
 
 # Revert back to previous language (Fortran 77)
 AC_LANG_POP([C])
@@ -970,7 +970,7 @@ AC_COMPILE_IFELSE(
     for j in "" "_" "__"
     do
       F77_MANGLED_NAME="${i}${j}"
-      AC_LINK_IFELSE([AC_LANG_CALL([],[${F77_MANGLED_NAME}])],[FNAME_STATUS="set" ; break 2])
+      AC_LINK_IFELSE()
     done
   done
 
@@ -1074,7 +1074,7 @@ AC_COMPILE_IFELSE(
     for j in "" "_" "__"
     do
       F77_MANGLED_NAME="${i}${j}"
-      AC_LINK_IFELSE([AC_LANG_CALL([],[${F77_MANGLED_NAME}])],[FNAME_STATUS="set" ; break 2])
+      AC_LINK_IFELSE()
     done
   done
 
@@ -1920,7 +1920,7 @@ if test "X${RUN_MPIF77_LNKR_CHECK}" = "Xyes"; then
   # Check if MPICC_COMP can link Fortran example
   # Note: AC_LINKONLY_IFELSE is a custom macro (modifications made to
   # general.m4 and c.m4)
-  AC_LINKONLY_IFELSE([],[MPIF77_LNKR_CHECK_OK="yes"],[MPIF77_LNKR_CHECK_OK="no"])
+  AC_LINKONLY_IFELSE()
 
   # Reset CC to original value
   CC="${SAVED_CC}"

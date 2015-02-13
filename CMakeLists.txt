@@ -421,4 +421,4 @@ install(EXPORT sundials-config DESTINATION ${PACKAGE_CONFIG_DIR})
 include(CMakePackageConfigHelpers)
 WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake COMPATIBILITY AnyNewerVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake
-    DESTINATION lib/cmake)
+    DESTINATION ${PACKAGE_CONFIG_DIR})

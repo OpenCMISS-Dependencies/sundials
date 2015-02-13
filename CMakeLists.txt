@@ -16,6 +16,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
+option(PACKAGE_CONFIG_DIR "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)" "lib/cmake")
 option(USE_LAPACK "${PROJECT_NAME} - Use LAPACK routines" ON)
 option(USE_MPI "${PROJECT_NAME} - Use MPI" ON)
 option(BUILD_FORTRAN "${PROJECT_NAME} - Build Fortran interfaces" ON)
@@ -416,7 +417,7 @@ if (FCMIX_ENABLE)
       DESTINATION include/sundials
     )
 endif()
-install(EXPORT sundials-config DESTINATION lib/cmake)
+install(EXPORT sundials-config DESTINATION ${PACKAGE_CONFIG_DIR})
 include(CMakePackageConfigHelpers)
 WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake COMPATIBILITY AnyNewerVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake

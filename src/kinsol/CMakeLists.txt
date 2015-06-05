@@ -85,6 +85,7 @@ SET_TARGET_PROPERTIES(sundials_kinsol
 IF(LAPACK_FOUND)
     target_link_libraries(sundials_kinsol PUBLIC lapack)
 endif()
+target_link_libraries(sundials INTERFACE sundials_kinsol)
 
 # Install the KINSOL library
 INSTALL(TARGETS sundials_kinsol EXPORT sundials-config

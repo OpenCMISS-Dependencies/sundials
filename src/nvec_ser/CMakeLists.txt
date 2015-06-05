@@ -33,6 +33,7 @@ SET_TARGET_PROPERTIES(sundials_nvecserial
   PROPERTIES OUTPUT_NAME sundials_nvecserial CLEAN_DIRECT_OUTPUT 1)
 target_include_directories(sundials_nvecserial PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_link_libraries(sundials INTERFACE sundials_nvecserial)
 INSTALL(TARGETS sundials_nvecserial
     EXPORT sundials-config 
     DESTINATION lib
@@ -48,8 +49,9 @@ IF(FCMIX_ENABLE)
   SET_TARGET_PROPERTIES(sundials_fnvecserial
     PROPERTIES OUTPUT_NAME sundials_fnvecserial CLEAN_DIRECT_OUTPUT 1)
   target_link_libraries(sundials_fnvecserial PUBLIC sundials_nvecserial)
-  target_include_directories(sundials_fnvecserial PUBLIC .)
-    #INSTALL(TARGETS sundials_fnvecserial DESTINATION lib)
+  target_link_libraries(sundials INTERFACE sundials_fnvecserial)
+  target_include_directories(sundials_fnvecserial PRIVATE .)
+  install(TARGETS sundials_fnvecserial EXPORT sundials-config DESTINATION lib)
 ENDIF()
 
 #

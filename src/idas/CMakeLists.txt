@@ -87,6 +87,7 @@ SET_TARGET_PROPERTIES(sundials_idas
 IF(LAPACK_FOUND)
     target_link_libraries(sundials_idas PUBLIC lapack)
 endif()
+target_link_libraries(sundials INTERFACE sundials_idas)
 
 # Install the IDA library
 INSTALL(TARGETS sundials_idas EXPORT sundials-config

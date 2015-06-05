@@ -88,6 +88,7 @@ SET_TARGET_PROPERTIES(sundials_cvode
 IF(LAPACK_FOUND)
     target_link_libraries(sundials_cvode PUBLIC lapack)
 endif()
+target_link_libraries(sundials INTERFACE sundials_cvode)
 
 # Install the CVODE header files
 INSTALL(FILES ${cvode_HEADERS} ${cvode_BL_HEADERS} DESTINATION include/cvode)

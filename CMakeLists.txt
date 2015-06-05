@@ -264,7 +264,7 @@ IF(WIN32)
 ENDIF()
 
 # -------------------------------------------------------------
-# Configure the header file sundials_config.h
+# Configure
 # -------------------------------------------------------------
 
 # All required substitution variables should be available at this point.
@@ -273,6 +273,9 @@ CONFIGURE_FILE(
   ${PROJECT_SOURCE_DIR}/include/sundials/sundials_config.in
   ${PROJECT_BINARY_DIR}/include/sundials/sundials_config.h
   )
+
+# add collecting interface library - subsequent libraries will add themselves to this for easy linking against ALL sundials libs
+add_library(sundials INTERFACE)
 
 # Add the include directory in the source tree and the one in
 # the binary tree (for the header file sundials_config.h)
@@ -403,7 +406,7 @@ IF(BUILD_TESTS)
 ENDIF()
 
 #----------------------------------
-# Install configuration header file
+# Install
 #----------------------------------
 
 # install configured header file
@@ -417,8 +420,21 @@ if (FCMIX_ENABLE)
       DESTINATION include/sundials
     )
 endif()
+install(TARGETS sundials EXPORT sundials-config)
 install(EXPORT sundials-config DESTINATION ${PACKAGE_CONFIG_DIR})
 include(CMakePackageConfigHelpers)
 WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake COMPATIBILITY AnyNewerVersion)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake 
+    "include(CMakeFindDependencyMacro)\r\n"
+    "set(_OLD_IMPORT_PREFIX \${_IMPORT_PREFIX})\r\n"
+)
+if (USE_LAPACK)
+    file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake 
+        "find_dependency(BLAS ${BLAS_VERSION})\r\n"
+        "find_dependency(LAPACK ${LAPACK_VERSION})\r\n")
+endif()
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake "set(_IMPORT_PREFIX \${_OLD_IMPORT_PREFIX})")
+install(FILES 
+    ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-version.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake
     DESTINATION ${PACKAGE_CONFIG_DIR})

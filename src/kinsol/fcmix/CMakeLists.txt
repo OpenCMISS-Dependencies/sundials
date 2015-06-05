@@ -33,7 +33,8 @@ SET_TARGET_PROPERTIES(sundials_fkinsol
   PROPERTIES OUTPUT_NAME sundials_fkinsol CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
     target_link_libraries(sundials_fkinsol PUBLIC lapack)
-endif()  
+endif()
+target_link_libraries(sundials INTERFACE sundials_fkinsol)
 
 # Install the FKINSOL library
 INSTALL(TARGETS sundials_fkinsol EXPORT sundials-config

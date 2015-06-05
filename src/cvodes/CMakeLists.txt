@@ -89,7 +89,8 @@ SET_TARGET_PROPERTIES(sundials_cvodes
   PROPERTIES OUTPUT_NAME sundials_cvodes CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
     target_link_libraries(sundials_cvodes PUBLIC lapack)
-endif()  
+endif()
+target_link_libraries(sundials INTERFACE sundials_cvodes)
 
 # Install the CVODES library
 INSTALL(TARGETS sundials_cvodes EXPORT sundials-config

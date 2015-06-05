@@ -40,6 +40,7 @@ ADD_LIBRARY(sundials_nvecparallel ${nvecparallel_SOURCES} ${shared_SOURCES})
 SET_TARGET_PROPERTIES(sundials_nvecparallel
   PROPERTIES OUTPUT_NAME sundials_nvecparallel CLEAN_DIRECT_OUTPUT 1)
 target_link_libraries(sundials_nvecparallel PUBLIC ${MPI_C_LIBRARIES})
+target_link_libraries(sundials INTERFACE sundials_nvecparallel)
 target_include_directories(sundials_nvecparallel PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)  
 INSTALL(TARGETS sundials_nvecparallel 
@@ -57,8 +58,9 @@ IF(FCMIX_ENABLE AND USE_MPIF)
   SET_TARGET_PROPERTIES(sundials_fnvecparallel
     PROPERTIES OUTPUT_NAME sundials_fnvecparallel CLEAN_DIRECT_OUTPUT 1)
   target_link_libraries(sundials_fnvecparallel PUBLIC sundials_nvecparallel)
-  target_include_directories(sundials_fnvecparallel PUBLIC .)
-  INSTALL(TARGETS sundials_fnvecparallel DESTINATION lib)
+  target_link_libraries(sundials INTERFACE sundials_fnvecparallel)
+  target_include_directories(sundials_fnvecparallel PRIVATE .)
+  INSTALL(TARGETS sundials_fnvecparallel EXPORT sundials-config DESTINATION lib)
 ENDIF()
 #
 MESSAGE(STATUS "Added NVECTOR_PARALLEL module")

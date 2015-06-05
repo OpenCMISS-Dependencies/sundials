@@ -34,6 +34,7 @@ target_include_directories(sundials_fida PUBLIC
 IF(LAPACK_FOUND)
     target_link_libraries(sundials_fida PUBLIC lapack)
 endif()
+target_link_libraries(sundials INTERFACE sundials_fida)
 
 # Install the FIDA library
 INSTALL(TARGETS sundials_fida EXPORT sundials-config

@@ -75,7 +75,7 @@ ENDIF()
 ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 
 # Add the build target for the static IDA library
-ADD_LIBRARY(sundials_ida 
+ADD_LIBRARY(sundials_ida
   ${ida_SOURCES}  ${ida_BL_SOURCES}  ${shared_SOURCES})
 
 target_include_directories(sundials_ida PUBLIC 
@@ -86,6 +86,7 @@ SET_TARGET_PROPERTIES(sundials_ida
 IF(LAPACK_FOUND)
     target_link_libraries(sundials_ida PUBLIC lapack)
 endif()
+target_link_libraries(sundials INTERFACE sundials_ida)
 
 # Install the IDA library
 INSTALL(TARGETS sundials_ida EXPORT sundials-config 

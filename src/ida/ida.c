@@ -3378,7 +3378,7 @@ void IDAProcessError(IDAMem IDA_mem,
 
 #ifndef NO_FPRINTF_OUTPUT
     fprintf(stderr, "\n[%s ERROR]  %s\n  ", module, fname);
-    fprintf(stderr, msgfmt);
+    fprintf(stderr, msgfmt, ap);
     fprintf(stderr, "\n\n");
 #endif
 

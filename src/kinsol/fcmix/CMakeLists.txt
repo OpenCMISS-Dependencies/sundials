@@ -32,7 +32,7 @@ target_include_directories(sundials_fkinsol PUBLIC
 SET_TARGET_PROPERTIES(sundials_fkinsol
   PROPERTIES OUTPUT_NAME sundials_fkinsol CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
-    target_link_libraries(sundials_fkinsol PUBLIC lapack)
+    target_link_libraries(sundials_fkinsol PUBLIC ${LAPACK_LIBRARIES})
 endif()
 target_link_libraries(sundials INTERFACE sundials_fkinsol)
 

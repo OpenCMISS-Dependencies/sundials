@@ -32,7 +32,7 @@ target_include_directories(sundials_fcvode PUBLIC
 SET_TARGET_PROPERTIES(sundials_fcvode
   PROPERTIES OUTPUT_NAME sundials_fcvode CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
-    target_link_libraries(sundials_fcvode PUBLIC lapack)
+    target_link_libraries(sundials_fcvode PUBLIC ${LAPACK_LIBRARIES})
 endif()
 
 # Install the FCVODE library

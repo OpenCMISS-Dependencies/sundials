@@ -84,7 +84,7 @@ target_include_directories(sundials_ida PUBLIC
 SET_TARGET_PROPERTIES(sundials_ida
   PROPERTIES OUTPUT_NAME sundials_ida CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
-    target_link_libraries(sundials_ida PUBLIC lapack)
+    target_link_libraries(sundials_ida PUBLIC ${LAPACK_LIBRARIES})
 endif()
 target_link_libraries(sundials INTERFACE sundials_ida)
 

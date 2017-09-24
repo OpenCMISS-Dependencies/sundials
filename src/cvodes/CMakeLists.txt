@@ -88,7 +88,7 @@ target_include_directories(sundials_cvodes PUBLIC
 SET_TARGET_PROPERTIES(sundials_cvodes
   PROPERTIES OUTPUT_NAME sundials_cvodes CLEAN_DIRECT_OUTPUT 1)
 IF(LAPACK_FOUND)
-    target_link_libraries(sundials_cvodes PUBLIC lapack)
+    target_link_libraries(sundials_cvodes PUBLIC ${LAPACK_LIBRARIES})
 endif()
 target_link_libraries(sundials INTERFACE sundials_cvodes)
 

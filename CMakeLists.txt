@@ -36,7 +36,6 @@ if (BUILD_FORTRAN)
 endif()
 
 IF(USE_LAPACK)
-    FIND_PACKAGE(BLAS ${BLAS_VERSION} REQUIRED)
     FIND_PACKAGE(LAPACK ${LAPACK_VERSION} REQUIRED)
     SET(SUNDIALS_BLAS_LAPACK YES)
 endif()
@@ -430,7 +429,6 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake
 )
 if (USE_LAPACK)
     file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake 
-        "find_dependency(BLAS ${BLAS_VERSION})\r\n"
         "find_dependency(LAPACK ${LAPACK_VERSION})\r\n")
 endif()
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake "set(_IMPORT_PREFIX \${${PROJECT_NAME}_IMPORT_PREFIX})")

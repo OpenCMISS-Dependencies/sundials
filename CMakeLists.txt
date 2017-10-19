@@ -16,7 +16,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
 PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
-option(PACKAGE_CONFIG_DIR "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)" "lib/cmake")
+set(PACKAGE_CONFIG_DIR "lib/cmake" CACHE STRING "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)")
 option(USE_LAPACK "${PROJECT_NAME} - Use LAPACK routines" ON)
 option(USE_MPI "${PROJECT_NAME} - Use MPI" ON)
 option(BUILD_FORTRAN "${PROJECT_NAME} - Build Fortran interfaces" ON)

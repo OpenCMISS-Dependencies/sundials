@@ -39,7 +39,7 @@ ADD_DEFINITIONS(-DBUILD_SUNDIALS_LIBRARY)
 ADD_LIBRARY(sundials_nvecparallel ${nvecparallel_SOURCES} ${shared_SOURCES})
 SET_TARGET_PROPERTIES(sundials_nvecparallel
   PROPERTIES OUTPUT_NAME sundials_nvecparallel CLEAN_DIRECT_OUTPUT 1)
-target_link_libraries(sundials_nvecparallel PUBLIC ${MPI_C_LIBRARIES})
+target_link_libraries(sundials_nvecparallel PUBLIC MPI::MPI_C)
 target_link_libraries(sundials INTERFACE sundials_nvecparallel)
 target_include_directories(sundials_nvecparallel PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)  

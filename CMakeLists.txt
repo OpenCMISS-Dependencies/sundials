@@ -16,7 +16,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
 PROJECT(SUNDIALS VERSION 2.5 LANGUAGES C)
 
 option(BUILD_TESTS "${PROJECT_NAME} - Build tests" ON)
-option(PACKAGE_CONFIG_DIR "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)" "lib/cmake")
+set(PACKAGE_CONFIG_DIR "lib/cmake" CACHE STRING "Directory for package config files (relative to CMAKE_INSTALL_PREFIX)")
 option(USE_LAPACK "${PROJECT_NAME} - Use LAPACK routines" ON)
 option(USE_MPI "${PROJECT_NAME} - Use MPI" ON)
 option(BUILD_FORTRAN "${PROJECT_NAME} - Build Fortran interfaces" ON)
@@ -36,7 +36,6 @@ if (BUILD_FORTRAN)
 endif()
 
 IF(USE_LAPACK)
-    FIND_PACKAGE(BLAS ${BLAS_VERSION} REQUIRED)
     FIND_PACKAGE(LAPACK ${LAPACK_VERSION} REQUIRED)
     SET(SUNDIALS_BLAS_LAPACK YES)
 endif()
@@ -48,9 +47,9 @@ if(USE_MPI)
     SET(MPI_EXTRA_LIBRARIES ${MPI_EXTRA_LIBRARIES} ${MPI_Fortran_LIBRARIES})
     
     include(CheckCSourceCompiles)
-    set(CMAKE_REQUIRED_DEFINITIONS ${MPI_COMPILE_FLAGS})
-    set(CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_PATH})
-    set(CMAKE_REQUIRED_LIBRARIES ${MPI_LIBRARIES} ${MPI_EXTRA_LIBRARIES})
+    set(CMAKE_REQUIRED_DEFINITIONS ${MPI_C_COMPILE_DEFINITIONS})
+    set(CMAKE_REQUIRED_INCLUDES ${MPI_C_INCLUDE_DIRS})
+    set(CMAKE_REQUIRED_LIBRARIES ${MPI_C_LIBRARIES})
     check_c_source_compiles(
         "#include <mpi.h>\n
         int main(){
@@ -430,8 +429,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake
 )
 if (USE_LAPACK)
     file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake 
-        "find_dependency(BLAS ${BLAS_VERSION})\r\n"
-        "find_dependency(LAPACK ${LAPACK_VERSION})\r\n")
+        "set(LAPACK_FIND_SYSTEM ${LAPACK_FIND_SYSTEM})\r\nfind_dependency(LAPACK ${LAPACK_VERSION})\r\n")
 endif()
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/sundials-config-dependencies.cmake "set(_IMPORT_PREFIX \${${PROJECT_NAME}_IMPORT_PREFIX})")
 install(FILES 

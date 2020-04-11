@@ -32,7 +32,7 @@ target_include_directories(sundials_fida PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 IF(LAPACK_FOUND)
-    target_link_libraries(sundials_fida PUBLIC lapack)
+    target_link_libraries(sundials_fida PUBLIC ${LAPACK_LIBRARIES})
 endif()
 target_link_libraries(sundials INTERFACE sundials_fida)
 
